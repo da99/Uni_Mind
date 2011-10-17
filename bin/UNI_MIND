@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+# -*- ruby -*-
+
+
+at_exit {
+  puts ""
+}
+
+require 'trollop'
+
+trollop = Trollop::options do
+  opt :root, "Login as root. User stays the same.", :default => false
+end # === Trollop::options
+
+require 'Uni_Mind' 
+action = ARGV.shift
+args   = ARGV
+Uni_Mind.run action, args, trollop
+
