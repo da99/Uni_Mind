@@ -13,7 +13,8 @@ trollop = Trollop::options do
 end # === Trollop::options
 
 require 'Uni_Mind' 
+group  = ARGV.shift
 action = ARGV.shift
 args   = ARGV
-Uni_Mind.run action, args, trollop
+Uni_Mind.run group, action, args, trollop
 

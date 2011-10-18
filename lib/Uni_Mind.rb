@@ -1,10 +1,10 @@
 require "Uni_Mind/version"
+require 'Checked'
+require 'Unified_IO'
 
 require 'Uni_Mind/Template_Dir'
 require 'Uni_Mind/Template_File'
 
-require 'Checked/Demand'
-require 'Checked/Ask'
 
 # ====================================================
 #
@@ -31,37 +31,50 @@ require 'Checked/Ask'
 
 
 class Uni_Mind
+  
+  Server_Not_Found = Class.new(RuntimeError)
+  
+  extend Checked::Clean::DSL
 
   Dir.glob("#{File.dirname __FILE__}/Uni_Mind/Recipes/*.rb").map { |raw_file|
-    name = File.basename(raw_file.chop_rb)
+    name = clean(raw_file, :ruby_name)
     require "Uni_Mind/Recipes/#{name}"
     include Uni_Mind::Recipes.const_get(name)
   }
   # =====================================================
   
-	module Class_Methods
-		
-		def run method, args, opts
-			base_server = eval(File.read 'configs/base.rb' )
+  module Class_Methods
+    
+    def run group, method, args, opts
+      base_server = eval(File.read 'configs/base.rb' )
+      server_count = 0
 
-			Dir.glob('configs/servers/*/config.rb').each { |file|
+      Dir.glob('configs/servers/*/config.rb').each { |file|
 
-				server = base_server.merge( eval(File.read file) )
-				server[:hostname] = File.basename(File.dirname(file))
+        server = base_server.merge( eval(File.read file) )
+        server[:hostname] = File.basename(File.dirname(file))
+
+        if opts[:root]
+          server[:root] = true
+        end
 
         server = Unified_IO::Server.new(server)
-        if opts[:group] && server.group != opts[:group]
-          next
-        end
-				Uni_Mind.new( server, method, args )
+        next if group != 'ALL' && server.group != group && server.hostname != group
+        
+        server_count += 1
+        Uni_Mind.new( server, method, args )
 
-			}
-		end
-		
-	end # === module Class_Methods
+      }
+      
+      if server_count === 0
+        raise Server_Not_Found, "#{group}"
+      end
+    end
+    
+  end # === module Class_Methods
   
   Wrong_IP = Class.new(RuntimeError)
-	extend Class_Methods
+  extend Class_Methods
   include Checked::Demand::DSL
   include Checked::Clean::DSL
   include Unified_IO::Local::Shell::DSL
@@ -71,30 +84,24 @@ class Uni_Mind
 
   def initialize new_server, method_name, args
 
-		@server         = new_server
-		@method_name    = method_name
+    @server         = new_server
+    @method_name    = method_name
     @args           = args
-		@run_count      = 0
-		
-    require File.expand_path("configs/groups/#{server.group}")
+    @run_count      = 0
+    
+    require File.expand_path("configs/groups/#{server.group}/base.rb")
     extend Uni_Mind.const_get(server.group)
-    unless respond_to?(action) && public_methods.include?(action.to_sym)
-			raise "Unknown action: #{action.inspect}" 
-		end
+    unless respond_to?(method_name) && public_methods.include?(method_name.to_sym)
+      raise "Unknown method_name: #{method_name.inspect}" 
+    end
     
     begin
-      ssh!.connect(server)
-			
-      hostname = ssh.run('hostname')
-      if !( hostname == server.hostname )
-        raise Wrong_IP, "HOSTNAME: #{hostname}, TARGET: #{server.hostname}, IP: #{server.ip}"
+
+      send "test_#{method_name}"
+
+      if run_count != 1
+        raise "Not called: #{action} count: #{@run_count}" 
       end
-
-			send "test_#{action}"
-
-			if run_count != 1
-				raise "Not called: #{action} count: #{@run_count}" 
-			end
         
     rescue Net::SSH::HostKeyMismatch => e
       if e.message[%r!fingerprint .+ does not match for!]
@@ -110,12 +117,26 @@ class Uni_Mind
     Unified_IO::Remote::SSH.disconnect
   end # === def initialize
   
+  def ssh *args
+    @ssh_valid ||= begin
+                     ssh!.connect(server)
+
+                     hostname = ssh.run('hostname')
+                     if !( hostname == server.hostname )
+                       raise Wrong_IP, "HOSTNAME: #{hostname}, TARGET: #{server.hostname}, IP: #{server.ip}"
+                     end
+                    
+                     true
+                   end
+    super
+  end
+
   def run
     if run_count > 0
       raise "Action called more than once: #{action} #{run_count}" 
     end
 
-    results = send( action, args )
+    results = send( method_name, args )
 
     @run_count += 1
     results

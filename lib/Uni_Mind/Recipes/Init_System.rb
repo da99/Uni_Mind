@@ -25,8 +25,8 @@ module Init_System
   def extend_with_os 
     # Include ArchLinux lib files
     Dir.glob("#{File.dirname __FILE__}/os/#{server.os_name}/*.rb").map { |file|
-      require file.chop_rb
-      extend Uni_Mind.const_get(File.basename file.chop_rb)
+      require clean(file, :chop_rb)
+      extend Uni_Mind.const_get(clean(file, :ruby_name))
     }
   end
 

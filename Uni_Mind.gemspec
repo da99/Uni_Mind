@@ -21,17 +21,18 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   # s.add_development_dependency "rspec"
   # s.add_runtime_dependency "rest-client"
-	s.add_development_dependency 'bacon'
-	s.add_development_dependency 'rake'
-	s.add_development_dependency 'Bacon_Colored'
-	
-	s.add_runtime_dependency  'net-ssh'
-	s.add_runtime_dependency  'net-scp'
-	s.add_runtime_dependency  'rake'
-	s.add_runtime_dependency  'capistrano'
-	s.add_runtime_dependency  'differ'
-	s.add_runtime_dependency  'term-ansicolor'
-	s.add_runtime_dependency  'Chop_Ext'
-	s.add_runtime_dependency  'trollop'
-	s.add_runtime_dependency  'Unified_IO'
+  s.add_development_dependency 'bacon'
+  s.add_development_dependency 'rake'
+  s.add_development_dependency 'Bacon_Colored'
+  
+  s.add_runtime_dependency  'net-ssh'
+  s.add_runtime_dependency  'net-scp'
+  s.add_runtime_dependency  'rake'
+  s.add_runtime_dependency  'capistrano'
+  s.add_runtime_dependency  'differ'
+  s.add_runtime_dependency  'term-ansicolor'
+  s.add_runtime_dependency  'Chop_Ext'
+  s.add_runtime_dependency  'trollop'
+  s.add_runtime_dependency  'Unified_IO'
+  s.add_runtime_dependency  'Checked'
 end

@@ -3,7 +3,7 @@
 class Uni_Mind
   module Recipes
 
-  module Rooter
+  module Connection
 
     attr_accessor :ssh_connection
     attr_reader :server, :remote

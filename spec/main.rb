@@ -6,17 +6,41 @@ require 'Bacon_Colored'
 require 'Unified_IO'
 include Unified_IO::Local::Shell::DSL
 
+# ======== Create files and folders.
+#
 FOLDER = "/tmp/Uni_Mind"
 shell.run "
   rm    -rf #{FOLDER}
-  mkdir -p  #{FOLDER}
-  cp -r spec/Boxes/Mind #{FOLDER}/Mind
-  cp -r spec/Boxes/App1 #{FOLDER}/App1
-  cp -r spec/Boxes/App2 #{FOLDER}/App2
-  cp -r spec/Boxes/Db1  #{FOLDER}/Db1
+  cp -r spec/Boxes #{FOLDER}
 "
   
+# File.open("#{FOLDER}/Gemfile", 'w') { |io|
+#   io.write %~
+#     gem 'Uni_Mind', :path=>"#{File.expand_path('.')}"
+#   ~
+# }
+  
+# ======== Setup helper methods.
+#
+def glob pattern
+  Dir.glob(File.join FOLDER, pattern)
+end
 
+def BIN cmd
+  Unified_IO::Local::Shell.new("#{FOLDER}/Mind").run "bundle exec UNI_MIND #{cmd}"
+end
+
+def exists? file
+  File.exists?(File.join FOLDER, file)
+end
+
+shared "Uni_Mind" do
+  before {
+  }
+end
+
+# ======== Include the tests.
+#
 Dir.glob('spec/tests/*.rb').each { |file|
   require File.expand_path(file.sub('.rb', '')) if File.file?(file)
 }
