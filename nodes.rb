@@ -1,3 +1,5 @@
+testd testd
+
 Remove packages:
   inetd
   portmap

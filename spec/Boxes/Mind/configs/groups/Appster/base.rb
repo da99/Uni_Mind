@@ -12,6 +12,14 @@ class Uni_Mind
       run
     end
     
+    def test_uptime
+      run
+    end
+     
+    def uptime
+      ssh.run("uptime")
+    end
+    
     def create_file file_name
       path = "/tmp/Uni_Mind/#{server.hostname}/#{args.first}"
       dir = File.dirname(path)

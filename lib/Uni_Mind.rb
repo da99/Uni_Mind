@@ -33,6 +33,7 @@ require 'Uni_Mind/Template_File'
 class Uni_Mind
   
   Server_Not_Found = Class.new(RuntimeError)
+  Wrong_IP = Class.new(RuntimeError)
   
   extend Checked::Clean::DSL
 
@@ -46,23 +47,23 @@ class Uni_Mind
   module Class_Methods
     
     def run group, method, args, opts
-      base_server = eval(File.read 'configs/base.rb' )
       server_count = 0
 
       Dir.glob('configs/servers/*/config.rb').each { |file|
 
-        server = base_server.merge( eval(File.read file) )
-        server[:hostname] = File.basename(File.dirname(file))
-
-        if opts[:root]
-          server[:root] = true
-        end
-
-        server = Unified_IO::Server.new(server)
-        next if group != 'ALL' && server.group != group && server.hostname != group
+        name = file[%r!/([^/]+)/config.rb!] && $1
+        server = Unified_IO::Remote::Server.new( name, opts )
+        applicable = begin
+                       group == 'ALL' || 
+                         server.group == group || 
+                         server.hostname == group
+                      end
+        
+        next unless applicable
         
         server_count += 1
-        Uni_Mind.new( server, method, args )
+        mind = Uni_Mind.new( server )
+        mind.setup_and_run( method, args )
 
       }
       
@@ -73,7 +74,6 @@ class Uni_Mind
     
   end # === module Class_Methods
   
-  Wrong_IP = Class.new(RuntimeError)
   extend Class_Methods
   include Checked::Demand::DSL
   include Checked::Clean::DSL
@@ -82,15 +82,20 @@ class Uni_Mind
 
   attr_reader :run_count, :server, :method_name, :args
 
-  def initialize new_server, method_name, args
+  def initialize new_server
 
-    @server         = new_server
+    @server = new_server
+    
+    require File.expand_path("configs/groups/#{server.group}/base.rb")
+    extend Uni_Mind.const_get(server.group)
+    
+  end # === def initialize
+  
+  def setup_and_run  method_name, args
     @method_name    = method_name
     @args           = args
     @run_count      = 0
     
-    require File.expand_path("configs/groups/#{server.group}/base.rb")
-    extend Uni_Mind.const_get(server.group)
     unless respond_to?(method_name) && public_methods.include?(method_name.to_sym)
       raise "Unknown method_name: #{method_name.inspect}" 
     end
@@ -103,6 +108,9 @@ class Uni_Mind
         raise "Not called: #{action} count: #{@run_count}" 
       end
         
+    rescue Timeout::Error => e
+      raise e, server.inspect
+      
     rescue Net::SSH::HostKeyMismatch => e
       if e.message[%r!fingerprint .+ does not match for!]
         remove_rsa_host_key
@@ -114,14 +122,14 @@ class Uni_Mind
       raise e
     end
 
-    Unified_IO::Remote::SSH.disconnect
-  end # === def initialize
-  
+    ssh!.disconnect
+  end # === def setup
+
   def ssh *args
     @ssh_valid ||= begin
                      ssh!.connect(server)
 
-                     hostname = ssh.run('hostname')
+                     hostname = super().run('hostname')
                      if !( hostname == server.hostname )
                        raise Wrong_IP, "HOSTNAME: #{hostname}, TARGET: #{server.hostname}, IP: #{server.ip}"
                      end
@@ -136,7 +144,7 @@ class Uni_Mind
       raise "Action called more than once: #{action} #{run_count}" 
     end
 
-    results = send( method_name, args )
+    results = send( method_name, *args )
 
     @run_count += 1
     results

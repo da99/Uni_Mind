@@ -1,5 +1,6 @@
 Hash[
-  :port     => 6892,
+  :port     => 22,
+  :hostname => 'localhost',
   :group    => 'Appster'
 ]
 
