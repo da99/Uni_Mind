@@ -8,10 +8,13 @@ Gem::Specification.new do |s|
   s.authors     = ["da99"]
   s.email       = ["i-hate-spam-45671204@mailinator.com"]
   s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
-
-  s.rubyforge_project = "Uni_Mind"
+  s.summary     = %q{Manage a fleet of servers.}
+  s.description = %q{
+Manage servers:
+	* issue commands
+	* update files and keep track of changes
+	* create your own "recipes" for servers and server groups
+	}
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
