@@ -125,15 +125,13 @@ class Uni_Mind
     ssh!.disconnect
   end # === def setup
 
-  def ssh *args
+  def ssh_connect
+    ssh
+  end
+
+  def ssh
     @ssh_valid ||= begin
                      ssh!.connect(server)
-
-                     hostname = super().run('hostname')
-                     if !( hostname == server.hostname )
-                       raise Wrong_IP, "HOSTNAME: #{hostname}, TARGET: #{server.hostname}, IP: #{server.ip}"
-                     end
-                    
                      true
                    end
     super

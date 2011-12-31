@@ -22,30 +22,35 @@ class Uni_Mind
       tmpl.download
     end
 
+    def upload_templates
+      ssh_connect
+      templates.upload
+    end
+
     def install_templates
       
       templates.upload
         
 
-      # 
-      # Get all .pac(new|save|old) files.
-      # 
-      # Loop .pac files:
-      #   NEXT If file does not exist.
-      #   NEXT If files have been downloaded.
-      #   
-      #   Download .pac file.
-      #   yell at user: Unknown .pac file found.
-      #   abort
-      #     
-      files = ssh(%!egrep "pac(new|orig|save)" /var/log/pacman.log!).split.uniq
-      files.each { |file|
-        far_file(file) { 
-          next if !far_file_exists?
-          next if far_is_in_origin?
-          far_must_be_in_origins
-        }
-      }
+      # # 
+      # # Get all .pac(new|save|old) files.
+      # # 
+      # # Loop .pac files:
+      # #   NEXT If file does not exist.
+      # #   NEXT If files have been downloaded.
+      # #   
+      # #   Download .pac file.
+      # #   yell at user: Unknown .pac file found.
+      # #   abort
+      # #     
+      # files = ssh(%!egrep "pac(new|orig|save)" /var/log/pacman.log!).split.uniq
+      # files.each { |file|
+      #   far_file(file) { 
+      #     next if !far_file_exists?
+      #     next if far_is_in_origin?
+      #     far_must_be_in_origins
+      #   }
+      # }
     end
 
     def remove_pac_file

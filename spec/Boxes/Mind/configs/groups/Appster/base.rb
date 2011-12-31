@@ -8,7 +8,7 @@ class Uni_Mind
       puts "Hi."
     end
     
-    def test_create_file
+    def test_print_info
       run
     end
     
@@ -20,14 +20,8 @@ class Uni_Mind
       ssh.run("uptime")
     end
     
-    def create_file file_name
-      path = "/tmp/Uni_Mind/#{server.hostname}/#{args.first}"
-      dir = File.dirname(path)
-      `mkdir -p #{dir}` unless Dir.exists?(dir)
-      
-      File.open(path, 'w') { |io|
-        io.write "Created for #{server.group}"
-      }
+    def print_info prop
+			puts "Server info: #{server.send(prop)}"
     end
     
   end # === module Appster

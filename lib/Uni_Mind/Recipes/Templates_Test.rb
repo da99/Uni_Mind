@@ -6,21 +6,25 @@ class Uni_Mind
   module Templates_Test
 
     def test_create_template_dirs
-      %w{ latest origin pending }.each { |dir|
+      %w{ latest origins pending }.each { |dir|
         must_be_dir File.join( 'templates', server.hostname, dir )
       }
     end
     
+    def test_upload_templates
+      run
+    end
+
     def test_download_as_template raw_path
       dir         = Template_Dir.new(server.hostname)
       file        = dir.file(raw_path)
-      origin      = dir.dir(:origin)
+      origins     = dir.dir(:origins)
       pending     = dir.dir(:pending)
       was_pending = file.in_dir?(:pending)
       
       user_action
       
-      demand( origin ) { |v|
+      demand( origins ) { |v|
         v.must_be! :content?, f.content
       }
       

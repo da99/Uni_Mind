@@ -10,17 +10,13 @@ describe "Custom command" do
   }
 
   it "sends custom command to specified group" do
-    BIN("Appster create_file to_appster.rb")
-    exists?("isle1/to_appster.rb").should.be == true
-    exists?("isle2/to_appster.rb").should.be == true
-    exists?("db1/to_appster.rb").should.be == false
+    target = "Server info: bdrm\nServer info: localhost"
+    BIN("Appster print_info hostname").should.be == target
   end
   
   it "sends custom command to all servers" do
-    BIN("ALL create_file to_all.rb")
-    exists?("isle1/to_all.rb").should.be == true
-    exists?("isle2/to_all.rb").should.be == true
-    exists?("db1/to_all.rb").should.be == true
+    target = "Server info: bdrm\nServer info: localhost\nServer info: Db1"
+    BIN("ALL print_info hostname").should.be == target
   end
   
 end # === describe Custom command

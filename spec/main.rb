@@ -4,15 +4,28 @@ require 'Uni_Mind'
 require 'Bacon_Colored'
 
 require 'Unified_IO'
-include Unified_IO::Local::Shell::DSL
+Unified_IO::Local::Shell.quiet
 
 # ======== Create files and folders.
 #
 FOLDER = "/tmp/Uni_Mind"
-shell.run "
-  rm    -rf #{FOLDER}
-  cp -r spec/Boxes #{FOLDER}
-"
+  
+class Box
+  include Unified_IO::Local::Shell::DSL
+  
+  def reset
+    shell.run "
+      rm -rf #{FOLDER}
+      cp -r  spec/Boxes #{FOLDER}
+    "
+    Dir.glob("spec/Boxes/Mind/configs/servers/*/templates/*/*.txt").each { |file|
+      shell.run "rm #{file}" if file['origins/'] || file['pending/']
+    }
+  end
+end
+
+BOX = Box.new
+BOX.reset
   
 # File.open("#{FOLDER}/Gemfile", 'w') { |io|
 #   io.write %~
@@ -26,8 +39,12 @@ def glob pattern
   Dir.glob(File.join FOLDER, pattern)
 end
 
-def BIN cmd
-  Unified_IO::Local::Shell.new("#{FOLDER}/Mind").run "bundle exec UNI_MIND #{cmd}"
+def BIN cmd, pre = ''
+  Unified_IO::Local::Shell.new("#{FOLDER}/Mind").run "#{pre} bundle exec UNI_MIND #{cmd}"
+end
+
+def BIN_SKIP_IP_CHECK cmd
+  BIN cmd, "SKIP_IP_CHECK=true"
 end
 
 def exists? file
