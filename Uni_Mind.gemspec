@@ -11,10 +11,10 @@ Gem::Specification.new do |s|
   s.summary     = %q{Manage a fleet of servers.}
   s.description = %q{
 Manage servers:
-	* issue commands
-	* update files and keep track of changes
-	* create your own "recipes" for servers and server groups
-	}
+  * issue commands
+  * update files and keep track of changes
+  * create your own "recipes" for servers and server groups
+  }
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
