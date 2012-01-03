@@ -1,32 +1,11 @@
 require "Uni_Mind/version"
+require 'Uni_Arch'
 require 'Checked'
 require 'Unified_IO'
 
 require 'Uni_Mind/Template_Dir'
 require 'Uni_Mind/Template_File'
 
-
-# ====================================================
-#
-# Create a temp dir and delete it at exit.
-#
-# puts %x! mkdir -p /tmp/Remotely !
-# 
-# at_exit { 
-#   %x! rm -rf /tmp/Remotely ! 
-#   
-#   if Dir.exists?('.git') && %x! git status ![/ +backups\\//]
-#     puts %x! 
-#       git reset
-#       git add backups/*
-#       git commit -m "Backed up files from server."
-#     !.strip.split("\\n").join(' && ')
-#   end
-# 
-#   puts ""
-#   puts ""
-# }
-# ====================================================
 
 
 
@@ -35,79 +14,65 @@ class Uni_Mind
   Server_Not_Found = Class.new(RuntimeError)
   Wrong_IP = Class.new(RuntimeError)
   
-  extend Checked::Clean::DSL
-
-  Dir.glob("#{File.dirname __FILE__}/Uni_Mind/Recipes/*.rb").map { |raw_file|
-    name = clean(raw_file, :ruby_name)
-    require "Uni_Mind/Recipes/#{name}"
-    include Uni_Mind::Recipes.const_get(name)
-  }
-  # =====================================================
-  
-  module Class_Methods
-    
-    def run group, method, args, opts
-      server_count = 0
-
-      Dir.glob('configs/servers/*/config.rb').each { |file|
-
-        name = file[%r!/([^/]+)/config.rb!] && $1
-        server = Unified_IO::Remote::Server.new( name, opts )
-        applicable = begin
-                       group == 'ALL' || 
-                         server.group == group || 
-                         server.hostname == group
-                      end
-        
-        next unless applicable
-        
-        server_count += 1
-        mind = Uni_Mind.new( server )
-        mind.setup_and_run( method, args )
-
-      }
-      
-      if server_count === 0
-        raise Server_Not_Found, "#{group}"
-      end
-    end
-    
-  end # === module Class_Methods
-  
-  extend Class_Methods
+  include Uni_Arch::Base
   include Checked::Demand::DSL
   include Checked::Clean::DSL
   include Unified_IO::Local::Shell::DSL
   include Unified_IO::Remote::SSH::DSL
-
-  attr_reader :run_count, :server, :method_name, :args
-
-  def initialize new_server
-
-    @server = new_server
-    
-    require File.expand_path("configs/groups/#{server.group}/base.rb")
-    extend Uni_Mind.const_get(server.group)
-    
-  end # === def initialize
   
-  def setup_and_run  method_name, args
-    @method_name    = method_name
-    @args           = args
-    @run_count      = 0
-    
-    unless respond_to?(method_name) && public_methods.include?(method_name.to_sym)
-      raise "Unknown method_name: #{method_name.inspect}" 
+  Dir.glob("#{File.dirname __FILE__}/Uni_Mind/Recipes/*.rb").map { |raw_file|
+    name = clean(raw_file, :ruby_name)
+    require "Uni_Mind/Recipes/#{name}"
+    use Uni_Mind::Recipes.const_get(name)
+  }
+  # =====================================================
+
+  before
+  def grab_uni_archs
+    %w{ groups servers }.each { |cat|
+      Dir.glob("configs/#{cat}/*/uni_arch.rb").each { |file|
+        require File.expand_path(file)
+      }
+    }
+  end
+
+  before
+  def set_server
+    server_name = request.path.info.split('/')[1]
+    return unless server_name
+    request.env.create :server, Uni_Mind.new( server_name )
+  end
+  
+  route "/ALL/!w action!/!* splat!/"
+  def to_all_servers
+    server_count = 0
+
+    Dir.glob('configs/servers/*/config.rb').each { |file|
+
+      name = file[%r!/([^/]+)/config.rb!] && $1
+      server = Unified_IO::Remote::Server.new( name )
+
+      mind = Uni_Mind.new( request.path.info.sub('/ALL/', "/#{server.name}/") )
+      begin
+        mind.fulfill_request
+        server_count += 1
+      rescue Uni_Arch::No_Route_Found
+      end
+      
+    }
+
+    if server_count.zero?
+      raise Server_Not_Found, request.path.info.inspect
     end
+  end
+  
+  before
+  def rescue_errors
     
     begin
 
-      send "test_#{method_name}"
+      request.continue
 
-      if run_count != 1
-        raise "Not called: #{action} count: #{@run_count}" 
-      end
-        
     rescue Timeout::Error => e
       raise e, server.inspect
       
@@ -125,45 +90,36 @@ class Uni_Mind
     ssh!.disconnect
   end # === def setup
 
-  def ssh_connect
-    ssh
-  end
+  module Base
 
-  def ssh
-    @ssh_valid ||= begin
-                     ssh!.connect(server)
-                     true
-                   end
-    super
-  end
-
-  def run
-    if run_count > 0
-      raise "Action called more than once: #{action} #{run_count}" 
+    def ssh_connect
+      ssh
     end
 
-    results = send( method_name, *args )
+    def ssh
+      @ssh_valid ||= begin
+                       ssh!.connect(server)
+                       true
+                     end
+      super
+    end
 
-    @run_count += 1
-    results
-  end
+    def save_pending_templates
+
+      if Dir.exists?('.git') && %x! git status ![/ \+configs\/servers\/.+\/templates\/pending/]
+        puts %x! 
+          git reset
+          git add configs/servers/*/templates/*
+          git commit -m "Backed up files from server."
+        !.strip.split("\n").join(' && ')
+      end
+
+    end
+
+  end # === module Base
+  
+  include Base
   
 end # === class Uni_Mind
 
 
-__END__
-
-
-
-  def validate_test_methods
-    test_meths = methods.grep(%r!^test_!).map(&:to_s)
-    test_meths.each { |meth|
-      orig = test_meths.detect { |orig| 
-        meth[orig]
-      }
-      
-      if !orig
-        raise "Original method not found for: #{meth}"
-      end
-    }
-  end

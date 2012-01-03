@@ -1,7 +1,9 @@
 
 class Uni_Mind
   module Recipes
-  module Templates
+  class Templates
+    
+    include Uni_Arch::Base
 
     private # ====================================================
 

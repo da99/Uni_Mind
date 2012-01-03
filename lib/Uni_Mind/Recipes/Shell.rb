@@ -3,7 +3,9 @@ class Uni_Mind
 
   module Recipes
 
-  module Shell
+  class Shell
+    
+    include Uni_Arch::Base
 
     # vi: http://kb.iu.edu/data/afdc.html
     def useradd new_user

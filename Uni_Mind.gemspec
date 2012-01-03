@@ -35,7 +35,7 @@ Manage servers:
   s.add_runtime_dependency  'differ'
   s.add_runtime_dependency  'term-ansicolor'
   s.add_runtime_dependency  'Chop_Ext'
-  s.add_runtime_dependency  'trollop'
+  s.add_runtime_dependency  'Uni_Arch'
   s.add_runtime_dependency  'Unified_IO'
   s.add_runtime_dependency  'Checked'
 end

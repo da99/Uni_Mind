@@ -3,7 +3,9 @@
 class Uni_Mind
   module Recipes
 
-  module Connection
+  class Connection
+
+    include Uni_Arch::Base
 
     attr_accessor :ssh_connection
     attr_reader :server, :remote

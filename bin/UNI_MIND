@@ -1,20 +1,13 @@
 #!/usr/bin/env ruby
 # -*- ruby -*-
 
+require 'Uni_Mind' 
+
+puts "", 'Executing: ', ARGV.inspect
+
+Uni_Mind.new( ARGV.first )
 
 at_exit {
   puts ""
 }
-
-require 'trollop'
-
-trollop = Trollop::options do
-  opt :root, "Login as root. User stays the same.", :default => false
-end # === Trollop::options
-
-require 'Uni_Mind' 
-group  = ARGV.shift
-action = ARGV.shift
-args   = ARGV
-Uni_Mind.run group, action, args, trollop
 

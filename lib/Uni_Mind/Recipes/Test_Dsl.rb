@@ -3,7 +3,9 @@ class Uni_Mind
 
   module Recipes
 
-  module Test_Dsl
+  class Test_Dsl
+    
+    include Uni_Arch::Base
     
   end # === module Test_Dsl
   

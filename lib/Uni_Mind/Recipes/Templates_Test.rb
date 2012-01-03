@@ -3,7 +3,9 @@ class Uni_Mind
 
   module Recipes
 
-  module Templates_Test
+  class Templates_Test
+    
+    include Uni_Arch::Base
 
     def test_create_template_dirs
       %w{ latest origins pending }.each { |dir|

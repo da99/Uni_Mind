@@ -3,7 +3,9 @@ class Uni_Mind
 
   module Recipes
 
-  module RVM
+  class RVM
+    
+    include Uni_Arch::Base
     
     
     
