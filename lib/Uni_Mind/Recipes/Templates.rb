@@ -17,11 +17,35 @@ class Uni_Mind
       templates.addrs.each { |d|
         shell "mkdir -p #{d}"
       }
+      
+      %w{ latest origins pending }.each { |dir|
+        must_be_dir File.join( 'templates', server.hostname, dir )
+      }
     end
 
     def download_as_template far_path
       tmpl = templates.file(far_path)
       tmpl.download
+      
+      raw_path = request.path
+
+      dir         = Template_Dir.new(server.hostname)
+      file        = dir.file(raw_path)
+      origins     = dir.dir(:origins)
+      pending     = dir.dir(:pending)
+      was_pending = file.in_dir?(:pending)
+      
+      user_action
+      
+      demand( origins ) { |v|
+        v.must_be! :content?, f.content
+      }
+      
+      if not was_pending
+        demand( pending ) { |v|
+          v.must_be! :content?, f.content
+        }
+      end
     end
 
     def upload_templates

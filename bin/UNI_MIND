@@ -3,9 +3,14 @@
 
 require 'Uni_Mind' 
 
-puts "", 'Executing: ', ARGV.inspect
+if ARGV.size > 1
+  raise "Unknown arguments: #{ARGV[1,ARGV.size]}"
+end
 
-Uni_Mind.new( ARGV.first )
+puts "", 'Executing: ', ARGV.first
+
+app = Uni_Mind.new( ARGV.first )
+app.fulfill_request
 
 at_exit {
   puts ""

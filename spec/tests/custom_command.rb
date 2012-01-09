@@ -9,9 +9,14 @@ describe "Custom command" do
     }
   }
 
+  it 'executes command' do
+    target = "Hiya, Uni_Mind"
+    BIN("/Appster/hello/Uni_Mind/").split("\n").last.should.be == target
+  end
+
   it "sends custom command to specified group" do
     target = "Server info: bdrm\nServer info: localhost"
-    BIN("Appster print_info hostname").should.be == target
+    BIN("/Appster/print_info/hostname/").should.be == target
   end
   
   it "sends custom command to all servers" do
