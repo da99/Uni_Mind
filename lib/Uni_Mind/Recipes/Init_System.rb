@@ -12,9 +12,7 @@ class Uni_Mind
           ssh('uptime')
         }
 
-        demand(results.output) { |v|
-          v.contain! %r!load average: \d+\.\d+, \d+\.\d+, \d+\.\d+!
-        }
+        string!(results.output).contain!  %r!load average: \d+\.\d+, \d+\.\d+, \d+\.\d+!
         
         puts results.output
       end

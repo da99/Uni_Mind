@@ -10,7 +10,7 @@ class Uni_Mind
     module Base
       
       include Unified_IO::Local::Shell::DSL
-      include Checked::Demand::DSL
+      include Checked::DSL
       attr_reader :template_dir, :address, :remote
       
       def initialize raw_addr, tmpl_dir
@@ -24,7 +24,7 @@ class Uni_Mind
                         end
         
         
-        addr = demand!(raw_addr, :file_address!)
+        addr = File_Path!(raw_addr)
         
         @address = if File.file?(addr)
                      File

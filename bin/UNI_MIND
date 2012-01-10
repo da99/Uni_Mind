@@ -3,13 +3,15 @@
 
 require 'Uni_Mind' 
 
-if ARGV.size > 1
-  raise "Unknown arguments: #{ARGV[1,ARGV.size]}"
-end
+args = if ARGV.size > 1
+        '/' + ARGV.join('/') + '/'
+       else
+         ARGV.first
+       end
 
-puts "", 'Executing: ', ARGV.first
+puts "", 'Executing: ', args
 
-app = Uni_Mind.new( ARGV.first )
+app = Uni_Mind.new( args )
 app.fulfill_request
 
 at_exit {

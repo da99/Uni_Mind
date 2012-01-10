@@ -7,8 +7,6 @@ require 'Uni_Mind/Template_Dir'
 require 'Uni_Mind/Template_File'
 
 
-
-
 class Uni_Mind
   
   Server_Not_Found = Class.new(RuntimeError)
@@ -16,10 +14,7 @@ class Uni_Mind
   Retry_Command = Class.new(RuntimeError)
   
   include Uni_Arch::Base
-  include Checked::Demand::DSL
-  include Checked::Clean::DSL
-  include Unified_IO::Local::Shell::DSL
-  include Unified_IO::Remote::SSH::DSL
+  include Checked::DSL
   
   # Dir.glob("#{File.dirname __FILE__}/Uni_Mind/Recipes/*.rb").map { |raw_file|
   #   name = clean(raw_file, :ruby_name)
@@ -42,40 +37,39 @@ class Uni_Mind
     name = '*' if name == 'ALL'
     return unless name
     
-    if Unified_IO::Remote::Server.server?(name)
-      request.env.create :server, Unified_IO::Remote::Server.new( server_name )
-      return true
-    end
+    case request.path
+    when %r!/ALL/servers!
+      request.env.create :servers, Unified_IO::Remote::Server.all
+    when %r!/ALL/groups!
+      request.env.create :groups, Unified_IO::Remote::Server_Group.all
+    else
     
+      if Unified_IO::Remote::Server.group?(name)
+        request.env.create :group, Unified_IO::Remote::Server_Group.new(name)
+        request.env.create :servers, group.servers
+      end
 
-    if Unified_IO::Remote::Server.group?(name) || name == '*'
-      group = Unified_IO::Remote::Server_Group.new(name)
-
-      request.env.create :servers, group.servers
-      request.env.create :group, group
-      return true
-    end
-      
-  end
-  
-  route "/ALL/!w action!/!* splat!/"
-  def to_all_servers
-    server_count = 0
-
-    servers.each { |s|
-
-      mind = Uni_Mind.new( request.path.sub('/ALL/', "/#{s.name}/") )
-      begin
-        mind.fulfill_request
-        server_count += 1
-      rescue Uni_Arch::No_Route_Found
+      if Unified_IO::Remote::Server.server?(name)
+        request.env.create :server, Unified_IO::Remote::Server.new( name )
       end
       
-    }
-
-    if server_count.zero?
-      raise Server_Not_Found, request.path.inspect
     end
+  end
+  
+  route "/ALL/groups/!* splat!/"
+  def to_all_groups
+    Unified_IO::Remote::Server_Group.all.each { |group|
+      app = Uni_Mind.new("/#{group.name}/#{request.captures[:splat].join('/')}/")
+      app.fulfill_request
+    }
+  end
+
+  route "/ALL/servers/!* splat!/"
+  def to_all_servers
+    Unified_IO::Remote::Server.all.each { |server|
+      app = Uni_Mind.new("/#{server.hostname}/#{request.captures[:splat].join('/')}/")
+      app.fulfill_request
+    }
   end
   
   on_error Timeout::Error
@@ -102,6 +96,9 @@ class Uni_Mind
 
   module Base
 
+    include Unified_IO::Local::Shell::DSL
+    include Unified_IO::Remote::SSH::DSL
+
     def ssh_connect
       ssh
     end
@@ -126,13 +123,13 @@ class Uni_Mind
 
     end
     
-    def servers
-      request.env.servers
-    end
-
-    def group
-      request.env.server_group
-    end
+    %w{ servers server groups group }.each { |meth|
+      eval %~
+        def #{meth}
+          request.env.#{meth}
+        end
+      ~
+    }
 
   end # === module Base
   
@@ -140,4 +137,11 @@ class Uni_Mind
   
 end # === class Uni_Mind
 
+%w{ Templates }.each { |recipe|
+  require "Uni_Mind/Recipes/#{recipe}"
+  Uni_Mind.use Uni_Mind::Recipes.const_get(recipe)
+}
 
+Dir.glob("configs/**/uni_mind.rb").each { |file|
+  require File.expand_path( file.sub('.rb', '') )
+}
