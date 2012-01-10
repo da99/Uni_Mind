@@ -11,10 +11,10 @@ Gem::Specification.new do |s|
   s.summary     = %q{Manage a fleet of servers.}
   s.description = %q{
 Manage servers:
-	* issue commands
-	* update files and keep track of changes
-	* create your own "recipes" for servers and server groups
-	}
+  * issue commands
+  * update files and keep track of changes
+  * create your own "recipes" for servers and server groups
+  }
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
@@ -36,6 +36,6 @@ Manage servers:
   s.add_runtime_dependency  'term-ansicolor'
   s.add_runtime_dependency  'Chop_Ext'
   s.add_runtime_dependency  'trollop'
-  s.add_runtime_dependency  'Unified_IO'
-  s.add_runtime_dependency  'Checked'
+  s.add_runtime_dependency  'Unified_IO', '< 0.3.0'
+  s.add_runtime_dependency  'Checked', '<= 0.2.4'
 end
