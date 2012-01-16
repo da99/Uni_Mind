@@ -1,33 +1,28 @@
 
-class Appster
+class Appster < Sinatra::Base
 
-  include Uni_Arch::Base
+  include Uni_Mind::Arch
 
-  namespace '/Appster'
+  map '/Appster'
 
-  route '/hello/!w name!/'
+  get '/hello/:name/'
   def hello_world
-    puts "Hiya, #{request.captures[:name]}"
+    puts "Hiya, #{params[:name]}"
   end
 
-  route
+  get
   def uptime
     ssh.run("uptime")
   end
 
-  route '/print_info/!w prop!/'
+  get '/print_info/:prop/'
   def print_info 
-    request.env.servers.each { |s|
-      puts "Server info: #{s.send(request.captures[:prop])}"
+    servers.each { |s|
+      puts "Server info: #{s.send(params[:prop])}"
     }
   end
   
   private # ====================
-
-  def server
-    request.env.server
-  end
-    
   
 end # === class Appster
 

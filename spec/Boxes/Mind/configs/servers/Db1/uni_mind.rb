@@ -1,14 +1,13 @@
 
-class Db1
+class Db1 < Sinatra::Base
 
-  include Uni_Arch::Base
-  include Uni_Mind::Base
+  include Uni_Mind::Arch
 
-  namespace '/Db1'
+  map '/Db1'
 
-  route '/print_info/!w prop!/'
+  get '/print_info/:prop/'
   def print_info 
-    puts "Server info: #{server.send(request.captures[:prop])}"
+    puts "Server info: #{server.send(params[:prop])}"
   end
     
   

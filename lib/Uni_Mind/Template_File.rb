@@ -29,7 +29,7 @@ class Uni_Mind
         @address = if File.file?(addr)
                      File
                        .basename(addr)
-                       .sub( %r!\.[\d-\:]+$!, '' )
+                       .sub( %r!\.[\d\-\:]+$!, '' )
                        .gsub(',', '/')
                    else
                      addr

@@ -52,9 +52,6 @@ class Uni_Mind
     end 
   end # === def create_ssh_keys
 
-  def remove_rsa_host_key
-    shell "ssh-keygen -f \"#{File.expand_path "~/.ssh/known_hosts"}\" -R #{server[:ip]}"
-  end
 
   def restart_sshd 
     case server.os_name
