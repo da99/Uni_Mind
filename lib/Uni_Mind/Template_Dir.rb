@@ -9,6 +9,7 @@ class Uni_Mind
     module Base
       
       include Unified_IO::Remote::SSH::DSL
+      include Unified_IO::Local::Shell::DSL
       include Checked::DSL::Ruby
 
       attr_reader :hostname, :address
@@ -61,7 +62,7 @@ class Uni_Mind
           elsif remote_content.empty?
             
             # upload
-            puts "uploading file: #{latest} => #{remote}"
+            shell.tell "uploading file: #{latest} => #{remote}"
             scp_upload latest, remote
 
           else
@@ -80,7 +81,7 @@ class Uni_Mind
                 new_file = File.join(addr(folder), basename + Time.now.strftime(".%F--%T").gsub(':','.'))
                 File.open(new_file, 'w' ) { |io| io.write remote_content }
               }
-              puts "Content needs to be reviewed/merged into :latest: #{new_file}"
+              shell.tell "Content needs to be reviewed/merged into :latest: #{new_file}"
               abort
             end
           end

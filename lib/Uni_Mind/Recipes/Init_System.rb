@@ -5,6 +5,7 @@ class Uni_Mind
 
       include Uni_Arch::Base
       include Uni_Mind::Base
+      include Unified_IO::Local::Shell::DSL
 
       route '/!w/uptime/'
       def uptime
@@ -14,7 +15,7 @@ class Uni_Mind
 
         string!(results.output).contain!  %r!load average: \d+\.\d+, \d+\.\d+, \d+\.\d+!
         
-        puts results.output
+        shell.tell results.output
       end
 
       def ensure_arch_linux
@@ -146,7 +147,7 @@ class Uni_Mind
       end
 
       def list_pacnews
-        puts pacnews.map(&:first)
+        shell.tell pacnews.map(&:first)
       end
 
       def install_pacnews

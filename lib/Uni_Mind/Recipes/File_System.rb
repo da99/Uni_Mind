@@ -6,6 +6,7 @@ class Uni_Mind
     class File_System
 
       include Uni_Arch::Base
+      include Unified_IO::Local::Shell::DSL
 
       route "/!w/diff/!w/!w/"
       def diff
@@ -13,7 +14,7 @@ class Uni_Mind
         output = %x! diff #{File.expand_path file1.strip} #{File.expand_path file2.strip} !
         case $?.exitstatus
         when 0, 1
-          puts output
+          shell.tell output
         else
           raise "Local Error: #{output}"
         end

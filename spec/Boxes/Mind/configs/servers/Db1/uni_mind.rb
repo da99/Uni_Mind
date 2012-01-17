@@ -2,6 +2,7 @@
 class Db1 < Sinatra::Base
 
   include Uni_Mind::Arch
+  include Unified_IO::Local::Shell::DSL
 
   map '/Db1'
 

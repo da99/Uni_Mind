@@ -6,4 +6,4 @@ FOLDER = "/tmp/Uni_Mind"
 
 Dir.chdir "#{FOLDER}/Mind"
 ENV['SKIP_IP_CHECK'] = 'true'
-puts `bundle exec UNI_MIND ALL servers upload_templates 2>&1`
+print `bundle exec UNI_MIND ALL servers upload_templates 2>&1`, "\n"

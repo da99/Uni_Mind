@@ -3,6 +3,8 @@ class Uni_Mind
   class Recipes
     class Afters
       
+      include Unified_IO::Local::Shell::DSL
+      
       def initialize app
         @app = app
       end
@@ -15,7 +17,7 @@ class Uni_Mind
       def save_pending_templates
 
         if Dir.exists?('.git') && %x! git status ![/ \+configs\/servers\/.+\/templates\/pending/]
-          puts %x! 
+          shell.tell %x! 
           git reset
           git add configs/servers/*/templates/*
           git commit -m "Backed up files from server."

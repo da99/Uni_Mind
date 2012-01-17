@@ -6,6 +6,7 @@ class Uni_Mind
   class Connection
 
     include Uni_Arch::Base
+    include Unified_IO::Local::Shell::DSL
 
     attr_accessor :ssh_connection
     attr_reader :server, :remote
@@ -90,7 +91,7 @@ class Uni_Mind
         print "."
       end
       
-      puts "\n\nLogging in as #{server[:user]}..."
+      shell.tell "\n\nLogging in as #{server[:user]}..."
       
       remotely { 
         setup_iptables
@@ -121,7 +122,7 @@ class Uni_Mind
       $stdout = STDOUT
       
       out.rewind
-      puts *out.readlines
+      shell.tell *out.readlines
     end
 
     def test_pty_as_root
@@ -133,7 +134,7 @@ class Uni_Mind
         
         
         channel.on_data { |ch2, data|
-          puts data 
+          shell.tell data 
           
           if data[ %r!\[y/N\]!i ] 
             STDOUT.flush  
@@ -176,8 +177,8 @@ class Uni_Mind
     def eval_as_root
       as_root {
         ssh_connection.exec!(ARGV[1]) { |ch, stream, data|
-          puts "#{stream.inspect}"
-          puts "#{data}"
+          shell.tell "#{stream.inspect}"
+          shell.tell "#{data}"
         }
       }
     end

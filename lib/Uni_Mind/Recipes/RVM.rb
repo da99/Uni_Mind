@@ -30,7 +30,7 @@ task :finish_rvm_install do
       data = cat_file(file)
 
       if data.strip[/\&\&\ +return/]
-        puts " FROM === http://obsforandroid.wordpress.com/2011/06/27/rvm-1-6-20/"
+        shell.tell " FROM === http://obsforandroid.wordpress.com/2011/06/27/rvm-1-6-20/"
         raise "in #{file}: RVM won't work if you use && return. Look at RVM instructions from bash install script."
       end
 
@@ -89,7 +89,7 @@ task :finish_rvm_install do
         msgs <<  ""
         
         msgs.each { |mess|
-          puts mess
+          shell.tell mess
         }
       else 
         sh "gem update"
