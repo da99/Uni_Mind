@@ -8,12 +8,13 @@ class Uni_Mind
     
     module Base
       
+      include Unified_IO::Remote::SSH::DSL
       include Checked::DSL::Ruby
 
-      attr_reader :hostname, :address, :server
+      attr_reader :hostname, :address
       
       def initialize server
-        @server = server
+        self.server = server
         @address  = File.join("configs/servers/#{server.hostname}/templates")
       end
       
@@ -41,34 +42,6 @@ class Uni_Mind
                   end
         
         content.gsub("\r", '').strip
-      end
-      
-      def scp_upload l, r
-        Net::SCP.upload!(server.hostname, server.user, l, r, :password => server.password)
-      end
-
-      def ssh_run cmd
-        stdout = ""
-        stderr = ""
-        
-        Net::SSH.start(server.hostname, server.user, :password => server.password) do |ssh|
-          
-          # capture only stdout matching a particular pattern
-          ssh.exec!(cmd) do |channel, stream, data|
-            if stream == :stdout
-              stdout << data 
-            else
-              stderr << "#{stream}: #{data}"
-            end
-          end
-
-        end
-        
-        if not stderr.empty?
-          raise Unified_IO::Remote::Shell, stderr
-        end
-
-        stdout
       end
 
       def sync
