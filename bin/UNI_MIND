@@ -4,7 +4,7 @@
 require 'Uni_Mind' 
 
 args = if ARGV.size > 1
-        '/' + ARGV.join('/') + '/'
+        '/' + ARGV.join('/')
        else
          ARGV.first
        end

@@ -5,16 +5,15 @@ class Uni_Mind
 
       include Uni_Mind::Arch
 
-      get "/:server_name/upload_templates/"
+      get "/:server_name/upload_templates"
       def upload_templates
-        ssh_connect
         templates.sync
       end
 
       private # ====================================================
 
       def templates
-        @templates ||= Template_Dir.new(server.hostname)
+        @templates ||= Template_Dir.new(server)
       end
 
       public # =====================================================

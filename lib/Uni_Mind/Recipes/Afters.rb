@@ -9,7 +9,6 @@ class Uni_Mind
       
       def call env
         arr = @app.call env
-        Unified_IO::Remote::SSH.disconnect
         arr
       end
 

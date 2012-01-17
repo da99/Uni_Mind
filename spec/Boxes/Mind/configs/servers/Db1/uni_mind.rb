@@ -5,7 +5,7 @@ class Db1 < Sinatra::Base
 
   map '/Db1'
 
-  get '/print_info/:prop/'
+  get '/print_info/:prop'
   def print_info 
     puts "Server info: #{server.send(params[:prop])}"
   end

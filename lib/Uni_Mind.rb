@@ -4,7 +4,6 @@ require 'Checked'
 require 'Unified_IO'
 
 require 'Uni_Mind/Template_Dir'
-require 'Uni_Mind/Template_File'
 
 
 class Uni_Mind
@@ -13,27 +12,7 @@ class Uni_Mind
   Server_Not_Found = Class.new(RuntimeError)
   Retry_Command    = Class.new(RuntimeError)
 
-  module Arch
-
-    include Unified_IO::Local::Shell::DSL
-    include Unified_IO::Remote::SSH::DSL
-    include Checked::DSL::Racked
-
-    def self.included klass
-      klass.send :include, Sin_Arch::Arch
-    end
-
-    def ssh_connect
-      ssh
-    end
-
-    def ssh
-      @ssh_valid ||= begin
-                       ssh!.connect(server)
-                       true
-                     end
-      super
-    end
+  module Base
     
     %w{ servers server groups group }.each { |meth|
       eval %~
@@ -42,7 +21,20 @@ class Uni_Mind
         end
       ~
     }
+    
+  end # === module Base
+  
+  module Arch
 
+    include Unified_IO::Local::Shell::DSL
+    include Unified_IO::Remote::SSH::DSL
+    include Checked::DSL::Racked
+    include Base
+
+    def self.included klass
+      klass.send :include, Sin_Arch::Arch
+    end
+    
   end # === module Arch
   
   include Arch
