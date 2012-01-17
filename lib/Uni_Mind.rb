@@ -62,6 +62,7 @@ end # === class Uni_Mind
   ALL 
   On_Timeout_Error 
   On_RSA_Key_Mismatch
+  Templates
 }.each { |name|
   require "Uni_Mind/Recipes/#{name}"
   Uni_Mind.use Uni_Mind::Recipes.const_get(name.to_sym)

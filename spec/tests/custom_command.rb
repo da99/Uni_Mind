@@ -1,8 +1,6 @@
 
 describe "Custom command" do
   
-  behaves_like 'Uni_Mind'
-  
   after {
     glob("*/to_appster.rb").each { |file|
       File.delete file

@@ -3,15 +3,13 @@ class Uni_Mind
   class Recipes
     class Afters
       
-      include Unified_IO::Remote::SSH::DSL
-    
       def initialize app
         @app = app
       end
       
       def call env
         arr = @app.call env
-        ssh!.disconnect
+        Unified_IO::Remote::SSH.disconnect
         arr
       end
 

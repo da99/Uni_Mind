@@ -9,12 +9,12 @@ class Uni_Mind
     
     module Base
       
-      include Checked::DSL
+      include Checked::DSL::Racked
 
       attr_reader :hostname, :address
       
       def initialize raw_host
-        @hostname = string!(raw_host).hostname!
+        @hostname = String!(raw_host).hostname!
         @address = File.join("configs/servers/#{hostname}/templates")
       end
      
@@ -23,7 +23,7 @@ class Uni_Mind
       end
       
       def addr raw_name, file_name = :none
-        symbol!(raw_name).in! DIRS
+        Symbol!(raw_name).in! DIRS
         
         name = raw_name.to_s
         

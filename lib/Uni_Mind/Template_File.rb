@@ -10,7 +10,7 @@ class Uni_Mind
     module Base
       
       include Unified_IO::Local::Shell::DSL
-      include Checked::DSL
+      include Checked::DSL::Racked
       attr_reader :template_dir, :address, :remote
       
       def initialize raw_addr, tmpl_dir
@@ -83,10 +83,13 @@ class Uni_Mind
       #
       def download
         
+        shell.tell "Downloading remote file..."
+        
         if in_dir?(:origins)
           shell.notify "Already downloaded to: #{template_dir.addr :origins}"
           return false
         end
+        
         
         # notify "Downloaded [from] [to]:", address, pending.address
         file_twins(:origins).download

@@ -1,12 +1,11 @@
 
 class Uni_Mind
-  module Recipes
-    class Templates
+  class Recipes
+    class Templates < Sinatra::Base
 
-      include Uni_Arch::Base
-      include Uni_Mind::Base
+      include Uni_Mind::Arch
 
-      route "/!w/upload_templates/"
+      get "/:server_name/upload_templates/"
       def upload_templates
         ssh_connect
         templates.upload
@@ -135,6 +134,6 @@ class Uni_Mind
 
       end # === def download_to_templates
 
-    end # === module Templates
-  end # === module Recipes
+    end # === class Templates
+  end # === class Recipes
 end # === class Uni_Mind

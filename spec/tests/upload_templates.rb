@@ -1,8 +1,6 @@
 
 describe "Upload Templates" do
   
-  behaves_like 'Uni_Mind'
-
   before {
     BOX.reset
   }
