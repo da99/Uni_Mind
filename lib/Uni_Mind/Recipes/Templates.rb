@@ -8,7 +8,7 @@ class Uni_Mind
       get "/:server_name/upload_templates/"
       def upload_templates
         ssh_connect
-        templates.upload
+        templates.sync
       end
 
       private # ====================================================
