@@ -1,11 +1,17 @@
 
 class Uni_Mind
   class Recipes
-    class Befores < Sinatra::Base
+    class Befores 
 
       include Uni_Mind::Arch
+			
+			Map = "/*"
 
-      before
+			def request! *args
+				grab_uni_arch_files
+				set_group_or_servers
+			end
+
       def grab_uni_arch_files
         %w{ groups servers }.each { |cat|
           Dir.glob("configs/#{cat}/*/uni_arch.rb").each { |file|
@@ -14,7 +20,6 @@ class Uni_Mind
         }
       end
 
-      before
       def set_group_or_servers
         name = request.path.split('/')[1]
         name = '*' if name == 'ALL'

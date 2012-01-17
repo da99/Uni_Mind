@@ -1,11 +1,11 @@
 
 class Uni_Mind
   class Recipes
-    class Templates < Sinatra::Base
+    class Templates
 
       include Uni_Mind::Arch
+			Map = '/*'
 
-      get "/:server_name/upload_templates"
       def upload_templates
         templates.sync
       end

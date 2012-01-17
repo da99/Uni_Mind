@@ -1,4 +1,3 @@
-require 'sinatra/base'
-class Uni_Mind < Sinatra::Base
+class Uni_Mind
   VERSION = "1.1.0"
 end

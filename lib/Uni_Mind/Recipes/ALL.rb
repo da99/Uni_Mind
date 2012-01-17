@@ -1,27 +1,23 @@
 
 class Uni_Mind
   class Recipes
-    class ALL < Sinatra::Base
-      include Sin_Arch::Arch
+    class ALL 
+      include Uni_Mind::Arch
       
-      get "/ALL/groups/*"
-      def to_all_groups
+			Map = "/ALL"
+
+      def groups *args
         Unified_IO::Remote::Server_Group.all.each { |group|
-          app = Uni_Mind::App.new
-          app.get!("/#{group.name}/#{params[:splat].join('/')}")
+          app = Uni_Mind.new(File.join '/', group.name, *args)
+					app.fulfill_request
         }
-        
-        'ok'
       end
 
-      get "/ALL/servers/*"
-      def to_all_servers
+      def servers *args
         Unified_IO::Remote::Server.all.each { |server|
-          app = Uni_Mind::App.new
-          app.get!("/#{server.hostname}/#{params[:splat].join('/')}")
+          app = Uni_Mind.new(File.join '/', server.hostname, *args)
+					app.fulfill_request
         }
-        
-        'ok'
       end
 
     end # === class ALL

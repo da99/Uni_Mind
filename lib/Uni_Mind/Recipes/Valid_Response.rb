@@ -14,8 +14,6 @@ class Uni_Mind
         arr
       end # === def call env
       
-      
-      
     end # === class Valid_Response
     
   end # === class Recipes

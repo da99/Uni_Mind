@@ -11,7 +11,7 @@ args = if ARGV.size > 1
 
 puts "", 'Executing: ', args
 
-app = Uni_Mind::App.new
+app = Uni_Mind.new
 app.get!( args )
 
 at_exit {
