@@ -23,16 +23,16 @@ class Uni_Arch
   
   module Arch
     
-    attr_accessor :path
-    attr_reader   :env, :methods
+    attr_accessor :path, :env
+    attr_reader   :methods
     
     def self.included klass
       klass.extend ::Uni_Arch::Class_Methods unless klass.is_a?(Module)
     end
 
-    def initialize path
-      @path = path
-      @env  = {}
+    def initialize path, env = {}
+      @path    = path
+      @env     = env
       @methods = []
     end
 
@@ -53,10 +53,9 @@ class Uni_Arch
       end
 
       result = nil
-      env = {}
+      environ = {}
       klasses.each { |k|
-        app = k.new(path)
-        app.env.merge! env
+        app = k.new(path, environ)
         begin
           result = app.request! meth, *args
           methods << [ k, :request! ]
@@ -71,14 +70,27 @@ class Uni_Arch
             raise e unless e.message["undefined method `#{meth}'"]
           end
         end
-
-        env.merge!(app.env)
       }
 
       raise Not_Found, path if methods.empty?
 
       freeze
       result
+    end
+
+    Retry_Command = Class.new(RuntimeError)
+    def ssh_run *args
+      env.servers
+      begin
+        super
+      rescue Timeout::Error => e
+        raise e.class, env.server.inspect
+      rescue Net::SSH::HostKeyMismatch => e
+        if e.message[%r!fingerprint .+ does not match for!]
+          shell "ssh-keygen -f \"#{File.expand_path "~/.ssh/known_hosts"}\" -R #{env.server[:ip]}"
+          raise Retry_Command, "Removed the RSA key."
+        end
+      end
     end
 
   end # === module Arch
@@ -103,35 +115,6 @@ class Uni_Mind
     include Unified_IO::Local::Shell::DSL
     include Unified_IO::Remote::SSH::DSL
     include Checked::DSL::Racked
-
-    SERVER_METHODS = %w{ servers server groups group }
-
-    attr_writer *SERVER_METHODS
-    SERVER_METHODS.each { |meth|
-      eval %~
-        def #{meth}
-          raise "Not set: :#{meth}, env: \#{env.inspect}" unless env.has_key?('#{meth}') && env['#{meth}']
-          env['#{meth}']
-        end
-      ~
-    }
-
-    def ssh_run *args
-      begin
-        super
-      rescue Timeout::Error => e
-        raise e.class, server.inspect
-      rescue Net::SSH::HostKeyMismatch => e
-        if e.message[%r!fingerprint .+ does not match for!]
-          remove_rsa_host_key
-          raise Uni_Mind::Retry_Command, "Removed the RSA key."
-        end
-      end
-    end
-
-    def remove_rsa_host_key
-      shell "ssh-keygen -f \"#{File.expand_path "~/.ssh/known_hosts"}\" -R #{server[:ip]}"
-    end
 
   end # === module Arch
   

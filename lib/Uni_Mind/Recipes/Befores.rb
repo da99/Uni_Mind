@@ -27,21 +27,31 @@ class Uni_Mind
 
         case path
         when %r!/ALL/servers!
-          env['servers'] = Unified_IO::Remote::Server.all
+          env_create 'servers', Unified_IO::Remote::Server.all
         when %r!/ALL/groups!
-          env['groups'] = Unified_IO::Remote::Server_Group.all
+          env_create 'groups',  Unified_IO::Remote::Server_Group.all
         else
 
           if Unified_IO::Remote::Server.group?(name)
-            env['group'] = Unified_IO::Remote::Server_Group.new(name)
-            env['servers'] = group.servers
+            env_create 'group', Unified_IO::Remote::Server_Group.new(name)
+            env_create 'servers', group.servers
           elsif Unified_IO::Remote::Server.server?(name)
-            env['server'] = Unified_IO::Remote::Server.new( name )
+            env_create 'server',  Unified_IO::Remote::Server.new( name )
           end
 
         end
       end
 
+      def env_create key, val
+        env[key.to_s] = val
+        m = %~
+          def env.#{key}
+            raise "Not set: :#{key}, env: \#{env.inspect}" unless env.has_key?('#{key}') && env['#{key}']
+            env['#{key}']
+          end
+        ~
+        eval m, nil, __FILE__, __LINE__ - m.size
+      end
 
     end # === class Befores
   end # === class Recipes
