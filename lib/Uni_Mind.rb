@@ -4,14 +4,7 @@ require 'Unified_IO'
 
 require 'Uni_Mind/Template_Dir'
 
-
-class Uni_Mind
-  
-  Wrong_IP         = Class.new(RuntimeError)
-  Server_Not_Found = Class.new(RuntimeError)
-  Retry_Command    = Class.new(RuntimeError)
-  Not_Found        = Class.new(RuntimeError)
-  Frozen           = Class.new(RuntimeError)
+class Uni_Arch
 
   module Class_Methods
     
@@ -27,16 +20,91 @@ class Uni_Mind
     
   end # === module Class_Methods
   
+  
   module Arch
+    
+    attr_accessor :path
+    attr_reader   :env, :methods
+    
+    def self.included klass
+      klass.extend ::Uni_Arch::Class_Methods unless klass.is_a?(Module)
+    end
 
+    def initialize path
+      @path = path
+      @env  = {}
+      @methods = []
+    end
+
+    def fulfill_request
+      raise Frozen, path if frozen?
+
+      pieces = path.split('/')
+      ns     = pieces[0,2].join('/')
+      meth   = pieces[2, 1].first
+      args   = pieces[3, pieces.size - 3]
+
+      klasses = self.class.middleware.select { |klass|
+        klass.const_defined?(:Map) && [ns, '/*'].include?(klass::Map)
+      }
+
+      if klasses.empty?
+        raise ArgumentError, "No middleware found for: #{path}, using namespace: #{ns}, in: #{Uni_Mind.middleware.inspect}"
+      end
+
+      result = nil
+      env = {}
+      klasses.each { |k|
+        app = k.new(path)
+        app.env.merge! env
+        begin
+          result = app.request! meth, *args
+          methods << [ k, :request! ]
+        rescue NoMethodError => e
+          raise e unless e.message['undefined method `request!']
+          begin
+            result = app.public_send meth, *args
+            methods << [ k, meth ]
+          rescue ArgumentError => e
+            raise e unless e.message["wrong number of arguments"] && e.backtrace.first["`#{meth}'"]
+          rescue NoMethodError => e
+            raise e unless e.message["undefined method `#{meth}'"]
+          end
+        end
+
+        env.merge!(app.env)
+      }
+
+      raise Not_Found, path if methods.empty?
+
+      freeze
+      result
+    end
+
+  end # === module Arch
+
+end # === class Uni_Arch
+
+class Uni_Mind
+
+  Wrong_IP         = Class.new(RuntimeError)
+  Server_Not_Found = Class.new(RuntimeError)
+  Retry_Command    = Class.new(RuntimeError)
+  Not_Found        = Class.new(RuntimeError)
+  Frozen           = Class.new(RuntimeError)
+
+  module Arch
+    
+    def self.included klass
+      klass.extend ::Uni_Arch::Class_Methods
+    end
+
+    include Uni_Arch::Arch
     include Unified_IO::Local::Shell::DSL
     include Unified_IO::Remote::SSH::DSL
     include Checked::DSL::Racked
 
     SERVER_METHODS = %w{ servers server groups group }
-    
-    attr_accessor :path
-    attr_reader   :env
 
     attr_writer *SERVER_METHODS
     SERVER_METHODS.each { |meth|
@@ -47,12 +115,7 @@ class Uni_Mind
         end
       ~
     }
-    
-    def initialize path
-      @path = path
-      @env  = {}
-    end
-    
+
     def ssh_run *args
       begin
         super
@@ -72,61 +135,7 @@ class Uni_Mind
 
   end # === module Arch
   
-  extend Class_Methods
   include Arch
-  
-  attr_reader :methods
-  
-  def initialize *args
-    @methods = []
-    super
-  end
-
-  def fulfill_request
-    raise Frozen, path if frozen?
-    
-    pieces = path.split('/')
-    ns     = pieces[0,2].join('/')
-    meth   = pieces[2, 1].first
-    args   = pieces[3, pieces.size - 3]
-      
-    klasses = self.class.middleware.select { |klass|
-      klass.const_defined?(:Map) && [ns, '/*'].include?(klass::Map)
-    }
-    
-    if klasses.empty?
-      raise ArgumentError, "No middleware found for: #{path}, using namespace: #{ns}, in: #{Uni_Mind.middleware.inspect}"
-    end
-    
-    result = nil
-    env = {}
-    klasses.each { |k|
-      app = k.new(path)
-      app.env.merge! env
-      begin
-        result = app.request! meth, *args
-        methods << [ k, :request! ]
-      rescue NoMethodError => e
-        raise e unless e.message['undefined method `request!']
-        begin
-          result = app.public_send meth, *args
-          methods << [ k, meth ]
-        rescue ArgumentError => e
-          raise e unless e.message["wrong number of arguments"] && e.backtrace.first["`#{meth}'"]
-        rescue NoMethodError => e
-          raise e unless e.message["undefined method `#{meth}'"]
-        end
-      end
-      
-      env.merge!(app.env)
-    }
-    
-    raise Not_Found, path if methods.empty?
-    
-    freeze
-    result
-  end
-
   
 end # === class Uni_Mind
 
