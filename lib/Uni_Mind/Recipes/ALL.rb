@@ -4,19 +4,23 @@ class Uni_Mind
     class ALL 
       include Uni_Mind::Arch
       
-			Map = "/ALL"
+      Map = "/ALL"
 
       def groups *args
+        return super if args.empty?
+        
         Unified_IO::Remote::Server_Group.all.each { |group|
           app = Uni_Mind.new(File.join '/', group.name, *args)
-					app.fulfill_request
+          app.fulfill_request
         }
       end
 
       def servers *args
+        return super if args.empty?
+        
         Unified_IO::Remote::Server.all.each { |server|
           app = Uni_Mind.new(File.join '/', server.hostname, *args)
-					app.fulfill_request
+          app.fulfill_request
         }
       end
 

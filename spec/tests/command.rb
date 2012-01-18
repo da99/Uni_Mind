@@ -1,19 +1,22 @@
-class Test_It < Sinatra::Base
+class Aok
 
-  include Sin_Arch::Arch
+  include Uni_Mind::Arch
 
-  get "/aok" do
-    return! "aok"
+  Map = '/aok'
+
+  def aok?
+    "aok"
   end
   
 end # === class Test_It < Sinatra::Base
 
-Uni_Mind.use Test_It
+Uni_Mind.use Aok
     
 describe "Startup:" do
   
-  it 'executes command' do
-    Uni_Mind::App.new.get!("/aok").should.be == 'aok'
+  it 'executes command that returns result' do
+    app = Uni_Mind.new("/aok/aok?")
+    app.fulfill_request.should.be == 'aok'
   end
   
 end # === describe Sending a command to a server:

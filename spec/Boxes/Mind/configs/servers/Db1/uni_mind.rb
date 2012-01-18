@@ -1,14 +1,13 @@
 
-class Db1 < Sinatra::Base
+class Db1 
 
   include Uni_Mind::Arch
   include Unified_IO::Local::Shell::DSL
 
-  map '/Db1'
+  Map = '/Db1'
 
-  get '/print_info/:prop'
-  def print_info 
-    puts "Server info: #{server.send(params[:prop])}"
+  def print_info prop
+    puts "Server info: #{server.send prop}"
   end
     
   

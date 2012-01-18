@@ -11,6 +11,7 @@ class Uni_Mind
   Server_Not_Found = Class.new(RuntimeError)
   Retry_Command    = Class.new(RuntimeError)
   Not_Found        = Class.new(RuntimeError)
+  Frozen           = Class.new(RuntimeError)
 
   module Class_Methods
     
@@ -31,19 +32,26 @@ class Uni_Mind
     include Unified_IO::Local::Shell::DSL
     include Unified_IO::Remote::SSH::DSL
     include Checked::DSL::Racked
-    include Base
-    attr_accessor :path
 
     SERVER_METHODS = %w{ servers server groups group }
     
+    attr_accessor :path
+    attr_reader   :env
+
     attr_writer *SERVER_METHODS
     SERVER_METHODS.each { |meth|
       eval %~
         def #{meth}
-          raise "No set: :#{meth}" unless instance_variable_defined?(:@#{meth})
+          raise "Not set: :#{meth}, env: \#{env.inspect}" unless env.has_key?('#{meth}') && env['#{meth}']
+          env['#{meth}']
         end
       ~
     }
+    
+    def initialize path
+      @path = path
+      @env  = {}
+    end
     
     def ssh_run *args
       begin
@@ -67,42 +75,56 @@ class Uni_Mind
   extend Class_Methods
   include Arch
   
-  def initialize path
-    @path = path
-
-  end
+  attr_reader :methods
   
+  def initialize *args
+    @methods = []
+    super
+  end
+
   def fulfill_request
+    raise Frozen, path if frozen?
+    
     pieces = path.split('/')
-    ns     = pieces('/')[0,2].join('/')
-    meth   = pieces[2, 1]
-    args   = pieces[3, pieces - 3]
+    ns     = pieces[0,2].join('/')
+    meth   = pieces[2, 1].first
+    args   = pieces[3, pieces.size - 3]
       
     klasses = self.class.middleware.select { |klass|
       klass.const_defined?(:Map) && [ns, '/*'].include?(klass::Map)
     }
     
-    if args.empty?
-      raise ArgumentError, "No middleware found for: #{path}, using namespace: #{ns}"
+    if klasses.empty?
+      raise ArgumentError, "No middleware found for: #{path}, using namespace: #{ns}, in: #{Uni_Mind.middleware.inspect}"
     end
     
-    meths = []
+    result = nil
+    env = {}
     klasses.each { |k|
       app = k.new(path)
-      meths.<< begin
-                 app.request! meth, *args
-                 :request!
+      app.env.merge! env
+      begin
+        result = app.request! meth, *args
+        methods << [ k, :request! ]
       rescue NoMethodError => e
-        raise e unless e['undefined method `request!']
+        raise e unless e.message['undefined method `request!']
         begin
-          app.public_send meth, *args
-          meth
+          result = app.public_send meth, *args
+          methods << [ k, meth ]
+        rescue ArgumentError => e
+          raise e unless e.message["wrong number of arguments"] && e.backtrace.first["`#{meth}'"]
         rescue NoMethodError => e
+          raise e unless e.message["undefined method `#{meth}'"]
         end
       end
+      
+      env.merge!(app.env)
     }
     
-    raise Not_Found, path if meths.empty?
+    raise Not_Found, path if methods.empty?
+    
+    freeze
+    result
   end
 
   

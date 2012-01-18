@@ -1,25 +1,22 @@
 
-class Appster < Sinatra::Base
+class Appster
 
   include Uni_Mind::Arch
   include Unified_IO::Local::Shell::DSL
 
-  map '/Appster'
+  Map = '/Appster'
 
-  get '/hello/:name/'
-  def hello_world
-    puts "Hiya, #{params[:name]}"
+  def hello name
+    puts "Hiya, #{name}"
   end
 
-  get
   def uptime
     ssh.run("uptime")
   end
 
-  get '/print_info/:prop/'
-  def print_info 
+  def print_info prop
     servers.each { |s|
-      puts "Server info: #{s.send(params[:prop])}"
+      puts "Server info: #{s.send(prop)}"
     }
   end
   

@@ -4,7 +4,7 @@ class Uni_Mind
     class Templates
 
       include Uni_Mind::Arch
-			Map = '/*'
+      Map = '/*'
 
       def upload_templates
         templates.sync
@@ -32,7 +32,7 @@ class Uni_Mind
         tmpl = templates.file(far_path)
         tmpl.download
 
-        raw_path = request.path
+        raw_path = path
 
         dir         = Template_Dir.new(server.hostname)
         file        = dir.file(raw_path)

@@ -5,12 +5,12 @@ class Uni_Mind
 
     class File_System
 
+      Map = '/*'
+      
       include Uni_Arch::Base
       include Unified_IO::Local::Shell::DSL
-
-      route "/!w/diff/!w/!w/"
-      def diff
-        server, file1, file2 = request.captures
+      
+      def diff file1, file2
         output = %x! diff #{File.expand_path file1.strip} #{File.expand_path file2.strip} !
         case $?.exitstatus
         when 0, 1

@@ -4,41 +4,39 @@ class Uni_Mind
     class Befores 
 
       include Uni_Mind::Arch
-			
-			Map = "/*"
+      
+      Map = "/*"
 
-			def request! *args
-				grab_uni_arch_files
-				set_group_or_servers
-			end
+      def request! *args
+        grab_uni_arch_files
+        set_group_or_servers
+      end
 
       def grab_uni_arch_files
         %w{ groups servers }.each { |cat|
-          Dir.glob("configs/#{cat}/*/uni_arch.rb").each { |file|
+          (Dir.glob("configs/#{cat}/*/Uni_Arch.rb") + Dir.glob("configs/#{cat}/*/uni_arch.rb")).each { |file|
             require File.expand_path(file)
           }
         }
       end
 
       def set_group_or_servers
-        name = request.path.split('/')[1]
+        name = path.split('/')[1]
         name = '*' if name == 'ALL'
         return unless name
 
-        case request.path
+        case path
         when %r!/ALL/servers!
-          request.env['servers'] = Unified_IO::Remote::Server.all
+          env['servers'] = Unified_IO::Remote::Server.all
         when %r!/ALL/groups!
-          request.env['groups'] = Unified_IO::Remote::Server_Group.all
+          env['groups'] = Unified_IO::Remote::Server_Group.all
         else
 
           if Unified_IO::Remote::Server.group?(name)
-            request.env['group'] = Unified_IO::Remote::Server_Group.new(name)
-            request.env['servers'] = group.servers
-          end
-
-          if Unified_IO::Remote::Server.server?(name)
-            request.env['server'] = Unified_IO::Remote::Server.new( name )
+            env['group'] = Unified_IO::Remote::Server_Group.new(name)
+            env['servers'] = group.servers
+          elsif Unified_IO::Remote::Server.server?(name)
+            env['server'] = Unified_IO::Remote::Server.new( name )
           end
 
         end
