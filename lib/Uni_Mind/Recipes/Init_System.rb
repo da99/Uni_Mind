@@ -29,13 +29,13 @@ class Uni_Mind
 
         # Make sure arch-release file exists.
         ssh.silent("cat /etc/arch-release")
-        server.os_name = 'ArchLinux'
+        env.server.os_name = 'ArchLinux'
 
       end # === def ensure_arch_linux
 
       def extend_with_os 
         # Include ArchLinux lib files
-        Dir.glob("#{File.dirname __FILE__}/os/#{server.os_name}/*.rb").map { |file|
+        Dir.glob("#{File.dirname __FILE__}/os/#{env.server.os_name}/*.rb").map { |file|
           require clean(file, :chop_rb)
           extend Uni_Mind.const_get(clean(file, :ruby_name))
         }

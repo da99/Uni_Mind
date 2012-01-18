@@ -97,7 +97,7 @@ class Uni_Mind
       end
 
       def save_iptables
-        case server.os_name
+        case env.server.os_name
         when 'ArchLinux'
           sudo("/etc/rc.d/iptables save")
           if not ssh("cat /etc/rc.conf")[%r!^DAEMONS=\(.+ iptables network .+\)\s?$!]
@@ -108,7 +108,7 @@ class Uni_Mind
         when 'CentOS' 
           sudo("service iptables save")
         else
-          raise "Unknow OS: #{server.os_name.inspect}"
+          raise "Unknow OS: #{env.server.os_name.inspect}"
         end
       end
 

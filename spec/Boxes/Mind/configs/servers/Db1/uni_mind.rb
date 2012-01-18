@@ -7,7 +7,7 @@ class Db1
   Map = '/Db1'
 
   def print_info prop
-    puts "Server info: #{server.send prop}"
+    puts "Server info: #{env.server.send prop}"
   end
     
   

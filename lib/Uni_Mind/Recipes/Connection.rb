@@ -63,11 +63,11 @@ class Uni_Mind
           
           files_dont_match do
             ssh %@
-              iptables -I INPUT  -p tcp --dport #{server[:port]} -j ACCEPT
-              iptables -I OUTPUT -p tcp --sport #{server[:port]} -j ACCEPT
+              iptables -I INPUT  -p tcp --dport #{env.server[:port]} -j ACCEPT
+              iptables -I OUTPUT -p tcp --sport #{env.server[:port]} -j ACCEPT
             @
             
-            case server.os_name
+            case env.server.os_name
             when 'ArchLinux'
               ssh %@
                 nohup sh -c "sleep 2 && rc.d restart sshd" &
@@ -184,7 +184,7 @@ class Uni_Mind
     end
 
     def root_login?
-      server.login == 'root'
+      env.server.login == 'root'
     end
 
 

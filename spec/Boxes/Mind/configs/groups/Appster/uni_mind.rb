@@ -15,7 +15,7 @@ class Appster
   end
 
   def print_info prop
-    servers.each { |s|
+    env.servers.each { |s|
       puts "Server info: #{s.send(prop)}"
     }
   end

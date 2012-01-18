@@ -13,7 +13,7 @@ class Uni_Mind
       private # ====================================================
 
       def templates
-        @templates ||= Template_Dir.new(server)
+        @templates ||= Template_Dir.new(env.server)
       end
 
       public # =====================================================
@@ -24,7 +24,7 @@ class Uni_Mind
         }
 
       %w{ latest origins pending }.each { |dir|
-        must_be_dir File.join( 'templates', server.hostname, dir )
+        must_be_dir File.join( 'templates', env.server.hostname, dir )
       }
       end
 
@@ -34,7 +34,7 @@ class Uni_Mind
 
         raw_path = path
 
-        dir         = Template_Dir.new(server.hostname)
+        dir         = Template_Dir.new(env.server.hostname)
         file        = dir.file(raw_path)
         origins     = dir.dir(:origins)
         pending     = dir.dir(:pending)
@@ -79,7 +79,7 @@ class Uni_Mind
         raise "Not implemented."
 
         # 
-        # Check if .pac file exists on server.
+        # Check if .pac file exists on env.server.
         # 
         # Get target local dir.
         # Check if .pac file exists locally.

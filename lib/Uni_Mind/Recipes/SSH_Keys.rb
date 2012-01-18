@@ -54,7 +54,7 @@ class Uni_Mind
 
 
   def restart_sshd 
-    case server.os_name
+    case env.server.os_name
     when 'ArchLinux'
       sudo(" rc.d restart sshd ", :exits=>[0,127]) { |ch, data|
         case ch[:status]

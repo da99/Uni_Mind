@@ -34,7 +34,7 @@ class Uni_Mind
 
           if Unified_IO::Remote::Server.group?(name)
             env_create 'group', Unified_IO::Remote::Server_Group.new(name)
-            env_create 'servers', group.servers
+            env_create 'servers', env.group.servers
           elsif Unified_IO::Remote::Server.server?(name)
             env_create 'server',  Unified_IO::Remote::Server.new( name )
           end
@@ -46,11 +46,11 @@ class Uni_Mind
         env[key.to_s] = val
         m = %~
           def env.#{key}
-            raise "Not set: :#{key}, env: \#{env.inspect}" unless env.has_key?('#{key}') && env['#{key}']
-            env['#{key}']
+            raise "Not set: :#{key}, env: \#{inspect}" unless has_key?('#{key}') && self['#{key}']
+            self['#{key}']
           end
         ~
-        eval m, nil, __FILE__, __LINE__ - m.size
+        eval m, nil, __FILE__, __LINE__ - m.split("\n").size
       end
 
     end # === class Befores
