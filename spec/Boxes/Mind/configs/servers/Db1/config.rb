@@ -1,6 +1,6 @@
 Hash[
   :port     => 22,
-  :ip       => 'localhost',
+  :ip       => `hostname`.strip,
   :group    => 'Db'
 ]
 

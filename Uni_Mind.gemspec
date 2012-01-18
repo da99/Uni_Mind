@@ -21,9 +21,6 @@ Manage servers:
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  # specify any dependencies here; for example:
-  # s.add_development_dependency "rspec"
-  # s.add_runtime_dependency "rest-client"
   s.add_development_dependency 'bacon'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'Bacon_Colored'
@@ -31,11 +28,9 @@ Manage servers:
   s.add_runtime_dependency  'net-ssh'
   s.add_runtime_dependency  'net-scp'
   s.add_runtime_dependency  'rake'
-  s.add_runtime_dependency  'capistrano'
   s.add_runtime_dependency  'differ'
   s.add_runtime_dependency  'term-ansicolor'
-  s.add_runtime_dependency  'Chop_Ext'
-  s.add_runtime_dependency  'trollop'
-  s.add_runtime_dependency  'Unified_IO', '< 0.3.0'
-  s.add_runtime_dependency  'Checked', '<= 0.2.4'
+  s.add_runtime_dependency  'Sin_Arch', '>= 0.5.0'
+  s.add_runtime_dependency  'Unified_IO', '>= 1.0.0'
+  s.add_runtime_dependency  'Checked', '> 1.0.0'
 end

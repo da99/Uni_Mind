@@ -2,7 +2,9 @@
 class Uni_Mind
   module Recipes
 
-  module Ruby
+  class Ruby
+    
+    include Uni_Arch::Base
 
   def update_ruby
     raise "Not allowed as root." if root_login?

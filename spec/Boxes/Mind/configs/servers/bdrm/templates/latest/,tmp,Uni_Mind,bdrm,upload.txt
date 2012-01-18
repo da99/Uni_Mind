@@ -1,2 +1,1 @@
-Uploaded file: banshee.txt
-to: bdrm
+Text file: this file is supposed to be uploaded to server (bdrm)

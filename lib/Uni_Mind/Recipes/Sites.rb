@@ -1,7 +1,9 @@
 
 class Uni_Mind
 module Recipes
-module Sites
+class Sites
+    
+    include Uni_Arch::Base
   
     def setup_dirs
 

@@ -3,7 +3,9 @@
 class Uni_Mind
 module Recipes
 
-  module Thin
+  class Thin
+    
+    include Uni_Arch::Base
 
   def thin_start
     shell "thin -s1 -p 3001 start"

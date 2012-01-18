@@ -2,7 +2,9 @@
 class Uni_Mind
   module Recipes
 
-  module SSH_Keys
+  class SSH_Keys
+    
+    include Uni_Arch::Base
 
   def upload_authorized_key name
     local_and_far_files "~/.ssh/#{name}", "~/.ssh/authorized_keys" do
@@ -50,9 +52,6 @@ class Uni_Mind
     end 
   end # === def create_ssh_keys
 
-  def remove_rsa_host_key
-    shell "ssh-keygen -f \"#{File.expand_path "~/.ssh/known_hosts"}\" -R #{server[:ip]}"
-  end
 
   def restart_sshd 
     case server.os_name

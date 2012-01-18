@@ -17,6 +17,7 @@ class Box
     shell.run "
       rm -rf #{FOLDER}
       cp -r  spec/Boxes #{FOLDER}
+      cp Gemfile.lock #{FOLDER}/Mind/Gemfile.lock
     "
     Dir.glob("spec/Boxes/Mind/configs/servers/*/templates/*/*.txt").each { |file|
       shell.run "rm #{file}" if file['origins/'] || file['pending/']
@@ -27,12 +28,7 @@ end
 BOX = Box.new
 BOX.reset
   
-# File.open("#{FOLDER}/Gemfile", 'w') { |io|
-#   io.write %~
-#     gem 'Uni_Mind', :path=>"#{File.expand_path('.')}"
-#   ~
-# }
-  
+
 # ======== Setup helper methods.
 #
 def glob pattern
@@ -40,7 +36,15 @@ def glob pattern
 end
 
 def BIN cmd, pre = ''
-  Unified_IO::Local::Shell.new("#{FOLDER}/Mind").run "#{pre} bundle exec UNI_MIND #{cmd}"
+  # results = `sudo -u $USER -i sh -c "cd #{FOLDER}/Mind && #{pre} bundle exec UNI_MIND #{cmd} 2>&1"`
+  results = ''
+  Dir.chdir("#{FOLDER}/Mind") {
+    results = `#{pre} bundle exec UNI_MIND #{cmd} 2>&1`
+  }
+  if $?.exitstatus != 0
+    raise Unified_IO::Local::Shell::Failed, results
+  end
+  results
 end
 
 def BIN_SKIP_IP_CHECK cmd
@@ -51,10 +55,6 @@ def exists? file
   File.exists?(File.join FOLDER, file)
 end
 
-shared "Uni_Mind" do
-  before {
-  }
-end
 
 # ======== Include the tests.
 #
