@@ -3,16 +3,10 @@
 
 require 'Uni_Mind' 
 
-args = if ARGV.size > 1
-        '/' + ARGV.join('/')
-       else
-         ARGV.first
-       end
+puts "", 'Executing: ', ARGV.join(' ')
 
-puts "", 'Executing: ', args
-
-app = Uni_Mind.new( args )
-app.fulfill_request
+app = Uni_Mind.new( *ARGV )
+app.fulfill
 
 at_exit {
   puts ""
