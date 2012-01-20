@@ -1,10 +1,6 @@
 
 class Uni_Mind
-  class Recipes
-    class Templates
-
-      include Uni_Mind::Arch
-      Map = '/*'
+    module Templates
 
       def upload_templates
         templates.sync
@@ -134,5 +130,4 @@ class Uni_Mind
       end # === def download_to_templates
 
     end # === class Templates
-  end # === class Recipes
 end # === class Uni_Mind

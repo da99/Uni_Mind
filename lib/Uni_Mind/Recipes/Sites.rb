@@ -1,11 +1,11 @@
 
 class Uni_Mind
-module Recipes
-class Sites
-    
-    include Uni_Arch::Base
-  
-    def setup_dirs
+  module Recipes
+    class Sites
+
+      include Uni_Arch::Base
+
+      def setup_dirs
 
         ssh %!
           sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/x86_64/epel-release-5-4.noarch.rpm`
@@ -21,8 +21,8 @@ class Sites
           mkdir -p /apps/ruby
         !
 
-    end
-    
-end # === module Sites
-end # === module Recipes
+      end
+
+    end # === module Sites
+  end # === module Recipes
 end # === class Uni_Mind

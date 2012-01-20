@@ -1,126 +1,99 @@
 require "Uni_Mind/version"
-require 'Checked'
-require 'Unified_IO'
+require "Uni_Arch"
+require "Unified_IO"
 
-require 'Uni_Mind/Template_Dir'
-
-class Uni_Arch
-
-  module Class_Methods
-    
-    def middleware
-      @middleware ||= []
-    end
-
-    def use val
-      middleware << val
-      middleware.uniq!
-      val
-    end
-    
-  end # === module Class_Methods
-  
-  
-  module Arch
-    
-    attr_accessor :path, :env
-    attr_reader   :methods
-    
-    def self.included klass
-      klass.extend ::Uni_Arch::Class_Methods unless klass.is_a?(Module)
-    end
-
-    def initialize path, env = {}
-      @path    = path
-      @env     = env
-      @methods = []
-    end
-
-    def fulfill_request
-      raise Frozen, path if frozen?
-
-      pieces = path.split('/')
-      ns     = pieces[0,2].join('/')
-      meth   = pieces[2, 1].first
-      args   = pieces[3, pieces.size - 3]
-
-      klasses = self.class.middleware.select { |klass|
-        klass.const_defined?(:Map) && [ns, '/*'].include?(klass::Map)
-      }
-
-      if klasses.empty?
-        raise ArgumentError, "No middleware found for: #{path}, using namespace: #{ns}, in: #{Uni_Mind.middleware.inspect}"
-      end
-
-      result = nil
-      environ = {}
-      klasses.each { |k|
-        app = k.new(path, environ)
-        begin
-          result = app.request! meth, *args
-          methods << [ k, :request! ]
-        rescue NoMethodError => e
-          raise e unless e.message['undefined method `request!']
-          begin
-            result = app.public_send meth, *args
-            methods << [ k, meth ]
-          rescue ArgumentError => e
-            raise e unless e.message["wrong number of arguments"] && e.backtrace.first["`#{meth}'"]
-          rescue NoMethodError => e
-            raise e unless e.message["undefined method `#{meth}'"]
-          end
-        end
-      }
-
-      raise Not_Found, path if methods.empty?
-
-      freeze
-      result
-    end
-
-    Retry_Command = Class.new(RuntimeError)
-    def ssh_run *args
-      env.servers
-      begin
-        super
-      rescue Timeout::Error => e
-        raise e.class, env.server.inspect
-      rescue Net::SSH::HostKeyMismatch => e
-        if e.message[%r!fingerprint .+ does not match for!]
-          shell "ssh-keygen -f \"#{File.expand_path "~/.ssh/known_hosts"}\" -R #{env.server[:ip]}"
-          raise Retry_Command, "Removed the RSA key."
-        end
-      end
-    end
-
-  end # === module Arch
-
-end # === class Uni_Arch
+require "Uni_Mind/Inspect"
+require "Uni_Mind/Templates"
 
 class Uni_Mind
 
-  Wrong_IP         = Class.new(RuntimeError)
-  Server_Not_Found = Class.new(RuntimeError)
-  Retry_Command    = Class.new(RuntimeError)
-  Not_Found        = Class.new(RuntimeError)
-  Frozen           = Class.new(RuntimeError)
-
   module Arch
-    
-    def self.included klass
-      klass.extend ::Uni_Arch::Class_Methods
-    end
 
-    include Uni_Arch::Arch
     include Unified_IO::Local::Shell::DSL
     include Unified_IO::Remote::SSH::DSL
-    include Checked::DSL::Racked
+    include Uni_Mind::Inspect
+    include Uni_Mind::Templates
+    
+    attr_reader :request, :env, :uni_mind
+    def initialize uni_mind
+      @uni_mind = uni_mind
+      @env     = uni_mind.env
+      @request = uni_mind.request
+      self.server= env.server if env[:server]
+    end
+    
+    def fulfill
+      public_send env.method, *env.args
+    end
 
   end # === module Arch
   
   include Arch
   
+  module Base
+    
+    attr_reader :env, :request, :mind
+    
+    def initialize path
+      @env = Uni_Arch::Env.new
+      @request = req = Uni_Arch::Env.new
+      
+      req.create :path, path
+      req.create :origin, Uni_Arch::Env.new
+      req.origin.create :path, path
+      
+      kname, meth, args = path.gsub(%r!\A\/|\/\Z!, '').split('/')
+      env.create :map,    "/#{kname}"
+      env.create :method, meth
+      env.create :args,   args
+      
+      klass = begin
+                Uni_Mind.const_get kname.to_sym
+              rescue NameError => e
+                begin
+                  Object.const_get kname.to_sym
+                rescue NameError => e
+                  begin
+                    Object.const_get kname.upcase.map
+                  rescue NameError => e
+                    Object.const_get kname.split('_').map(&:capitalize).join('_').to_sym
+                  end
+                end
+              end
+      
+      env.create :klass, klass
+
+      if Unified_IO::Remote::Server.group?(env.kname)
+        env.create 'group', Unified_IO::Remote::Server_Group.new(kname)
+        env.create 'servers', env.group.servers
+      elsif Unified_IO::Remote::Server.server?(kname)
+        env.create 'server',  Unified_IO::Remote::Server.new( kname )
+      end
+
+      @mind= klass.new env, req
+    end
+    
+    def set_servers
+    end
+    
+  end # === module Base
+  
+  include Base
+  
+  module Class_Methods
+    
+    def request path
+      u = new(path)
+      u.mind.fulfill
+    end
+    
+  end # === module Class_Methods
+  
+  extend Class_Methods
+  
 end # === class Uni_Mind
+
+require 'Uni_Mind/Template_Dir'
 
 %w{ 
   Befores 
@@ -131,8 +104,10 @@ end # === class Uni_Mind
   Uni_Mind.use Uni_Mind::Recipes.const_get(name.to_sym)
 }
 
-
-
-Dir.glob("configs/**/uni_mind.rb").each { |file|
-  require File.expand_path( file.sub('.rb', '') )
+%w{ groups servers }.each { |cat|
+  %w{ Uni_Arch uni_arch Uni_Mind uni_mind }.each { |uni|
+    Dir.glob("configs/#{cat}/*/#{uni}.rb").each { |file|
+      require File.expand_path(file).sub(".rb", '')
+    }
+  }
 }

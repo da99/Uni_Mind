@@ -30,7 +30,7 @@ Manage servers:
   s.add_runtime_dependency  'rake'
   s.add_runtime_dependency  'differ'
   s.add_runtime_dependency  'term-ansicolor'
-  s.add_runtime_dependency  'Sin_Arch', '>= 0.5.0'
+  s.add_runtime_dependency  'Uni_Arch', '>= 0.5.0'
   s.add_runtime_dependency  'Unified_IO', '>= 1.0.0'
   s.add_runtime_dependency  'Checked', '> 1.0.0'
 end
