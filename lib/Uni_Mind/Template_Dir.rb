@@ -1,85 +1,88 @@
 
 
 class Uni_Mind
-	class Template_Dir
+  class Template_Dir
 
-		DIRS = [ :latest, :origins, :pending ]
+    include Unified_IO::Remote::SSH::DSL
+    include Unified_IO::Local::Shell::DSL
 
-		attr_reader :hostname, :address
+    DIRS = [ :latest, :origins, :pending ]
 
-		def initialize server
-			self.server = server
-			@address  = File.join("configs/servers/#{server.hostname}/templates")
-		end
+    attr_reader :hostname, :address
 
-		def addr raw_name, file_name = :none
-			raise ArgumentError, "Unknown dir: #{raw_name.inspect}" unless DIRS.include?(raw_name)
+    def initialize server
+      self.server = server
+      @address  = File.join("configs/servers/#{server.hostname}/templates")
+    end
 
-			parts = [address, raw_name.to_s]
-			if file_name != :none
-				parts << file_name
-			end
+    def addr raw_name, file_name = :none
+      raise ArgumentError, "Unknown dir: #{raw_name.inspect}" unless DIRS.include?(raw_name)
 
-			File.join *parts
-		end
+      parts = [address, raw_name.to_s]
+      if file_name != :none
+        parts << file_name
+      end
 
-		def read_file path
-			content = begin
-									File.read(path)
-								rescue Errno::ENOENT
-									begin
-										# ssh.exits(0,1).run("[[ -f #{path} ]] && cat #{path}").strip
-										ssh_run("[[ -f #{path} ]] && cat #{path}").strip
-									rescue Unified_IO::Remote::SSH::Failed
-											''
-									end
-								end
+      File.join *parts
+    end
 
-			content.gsub("\r", '').strip
-		end
+    def read_file path
+      content = begin
+                  File.read(path)
+                rescue Errno::ENOENT
+                  begin
+                    # ssh.exits(0,1).run("[[ -f #{path} ]] && cat #{path}").strip
+                    ssh_run("[[ -f #{path} ]] && cat #{path}").strip
+                  rescue Unified_IO::Remote::SSH::Failed
+                      ''
+                  end
+                end
 
-		def sync
+      content.gsub("\r", '').strip
+    end
 
-			Dir.glob(File.join addr(:latest), '/*').each { |latest|
-				next unless File.file?(latest)
+    def sync
 
-				basename       = File.basename( latest )
-				remote         = basename.gsub(',', '/') 
-				remote_content = read_file(remote)
-				local_content  = read_file(latest)
-				the_same       = !remote_content.empty? && local_content == remote_content
+      Dir.glob(File.join addr(:latest), '/*').each { |latest|
+        next unless File.file?(latest)
 
-				if  the_same
-					# do nothing
-					# 
-				elsif remote_content.empty?
+        basename       = File.basename( latest )
+        remote         = basename.gsub(',', '/') 
+        remote_content = read_file(remote)
+        local_content  = read_file(latest)
+        the_same       = !remote_content.empty? && local_content == remote_content
 
-					# upload
-					shell.tell "uploading file: #{latest} => #{remote}"
-					scp_upload latest, remote
+        if  the_same
+          # do nothing
+          # 
+        elsif remote_content.empty?
 
-				else
+          # upload
+          shell.tell "uploading file: #{latest} => #{remote}"
+          scp_upload latest, remote
 
-					# download to origins
-					in_origins = Dir.glob(addr(:origins) + '/*').detect { |path|
-						next unless File.file?(path)
-						read_file(path) == remote_content
-					}
+        else
 
-					if in_origins
-						# do nothing
-					else
-						new_file = nil
-						[:origins, :pending].each { |folder|
-							new_file = File.join(addr(folder), basename + Time.now.strftime(".%F--%T").gsub(':','.'))
-							File.open(new_file, 'w' ) { |io| io.write remote_content }
-						}
-						shell.tell "Content needs to be reviewed/merged into :latest: #{new_file}"
-						abort
-					end
-				end
-			}
-		end
+          # download to origins
+          in_origins = Dir.glob(addr(:origins) + '/*').detect { |path|
+            next unless File.file?(path)
+            read_file(path) == remote_content
+          }
 
-	end # === module Template_Files
+          if in_origins
+            # do nothing
+          else
+            new_file = nil
+            [:origins, :pending].each { |folder|
+              new_file = File.join(addr(folder), basename + Time.now.strftime(".%F--%T").gsub(':','.'))
+              File.open(new_file, 'w' ) { |io| io.write remote_content }
+            }
+            shell.tell "Content needs to be reviewed/merged into :latest: #{new_file}"
+            abort
+          end
+        end
+      }
+    end
+
+  end # === module Template_Files
 end # === class Uni_Mind
