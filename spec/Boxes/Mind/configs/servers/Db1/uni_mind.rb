@@ -2,9 +2,9 @@
 class Db1 
 
   include Uni_Mind::Arch
-
-  def print_info prop
-    puts "Server info: #{env.server.send prop}"
+  
+  def hello_db
+    "Hello, Db."
   end
     
 end # === class Db1

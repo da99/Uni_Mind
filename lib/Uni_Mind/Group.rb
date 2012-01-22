@@ -8,19 +8,19 @@ class Uni_Mind
     }
     
     attr_reader :apps
-    
+
     def fulfill
-      return super if respond_to?(request.method_name)
-      @apps ||= servers.map { |s| 
-        a = Uni_Mind.new(s.hostname, env.method_name, env.args) 
-        a.env.klass.new(self)
+    return super if respond_to?(request.method_name)
+      @apps ||= env.servers.map { |s| 
+        a = Uni_Mind.new(s.hostname, request.method_name, request.args) 
+        a.request.klass.new(self)
       }
-      invalid = apps.select { |a| !a.respond_to?(env.method_name) }
+      invalid = apps.select { |a| !a.respond_to?(request.method_name) }
       
       if invalid.empty?
-        apps.each(&:fulfill)
+        response.body apps.map(&:fulfill)
       else
-        raise Not_Found, invalid.map { |i| i.request.path }.join(', ')
+        raise Uni_Arch::Not_Found, invalid.map { |i| i.request.path }.join(', ')
       end
     end
 

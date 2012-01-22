@@ -6,6 +6,7 @@ require 'Uni_Mind/Template_Dir'
 class Uni_Mind
 
   MODS = %w{ Inspect Templates}
+  include Uni_Arch::Arch
   
   module Arch
 
@@ -14,20 +15,22 @@ class Uni_Mind
     def initialize *args
       super
       
-      k = env.klass.name
+      k = request.klass.name
       [ k, k.downcase, k.capitalize, k.upcase ].detect { |s_name| 
         
         if Unified_IO::Remote::Server.group?(s_name)
           
           env.create 'group',   Unified_IO::Remote::Server_Group.new( s_name )
           env.create 'servers', env.group.servers
-          extend Uni_Mind::Group
+          request.klass.send( :include, Uni_Mind::Group ) #unless request.klass.included_modules.include?(Uni_Mind::Group)
+          true
           
         elsif Unified_IO::Remote::Server.server?( s_name )
           
           env.create 'server',  Unified_IO::Remote::Server.new( s_name )
           extend Uni_Mind::Server
           self.server = env.server
+          true
           
         end
         
@@ -36,9 +39,6 @@ class Uni_Mind
     end
 
   end # === module Arch
-  
-  include Uni_Arch::Arch
-
 end # === class Uni_Mind
 
 Uni_Mind::MODS.each { |mod| require "Uni_Mind/#{mod}" }
