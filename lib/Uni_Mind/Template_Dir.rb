@@ -26,30 +26,23 @@ class Uni_Mind
       File.join *parts
     end
 
-    def read_file path
-      content = begin
-                  File.read(path)
-                rescue Errno::ENOENT
-                  begin
-                    # ssh.exits(0,1).run("[[ -f #{path} ]] && cat #{path}").strip
-                    ssh_run("[[ -f #{path} ]] && cat #{path}").strip
-                  rescue Unified_IO::Remote::SSH::Failed
-                      ''
-                  end
-                end
-
-      content.gsub("\r", '').strip
-    end
-
     def sync
 
       Dir.glob(File.join addr(:latest), '/*').each { |latest|
         next unless File.file?(latest)
 
         basename       = File.basename( latest )
+        
         remote         = basename.gsub(',', '/') 
-        remote_content = read_file(remote)
-        local_content  = read_file(latest)
+        remote_content = begin
+                           r = Unified_IO::Remote::File.new(remote)
+                           r.server = server
+                           r.content
+                         rescue Unified_IO::Remote::File::Not_Found
+                           ''
+                         end
+        
+        local_content  = Unified_IO::Local::File.new(latest).content
         the_same       = !remote_content.empty? && local_content == remote_content
 
         if  the_same
@@ -66,7 +59,7 @@ class Uni_Mind
           # download to origins
           in_origins = Dir.glob(addr(:origins) + '/*').detect { |path|
             next unless File.file?(path)
-            read_file(path) == remote_content
+            Unified_IO::Local::File.new(path).content == remote_content
           }
 
           if in_origins
