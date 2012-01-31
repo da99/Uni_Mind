@@ -35,6 +35,10 @@ def glob pattern
   Dir.glob(File.join FOLDER, pattern)
 end
 
+def chdir 
+  Dir.chdir("#{FOLDER}/Mind") { yield }
+end
+
 def BIN cmd, pre = ''
   # results = `sudo -u $USER -i sh -c "cd #{FOLDER}/Mind && #{pre} bundle exec UNI_MIND #{cmd} 2>&1"`
   results = ''
@@ -57,7 +61,10 @@ end
 
 
 # ======== Include the tests.
-#
-Dir.glob('spec/tests/*.rb').each { |file|
-  require File.expand_path(file.sub('.rb', '')) if File.file?(file)
-}
+if ARGV.size > 1 && ARGV[1, ARGV.size - 1].detect { |a| File.exists?(a) }
+  # Do nothing. Bacon grabs the file.
+else
+  Dir.glob('spec/tests/*.rb').each { |file|
+    require File.expand_path(file.sub('.rb', '')) if File.file?(file)
+  }
+end

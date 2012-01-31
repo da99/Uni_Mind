@@ -1,0 +1,16 @@
+---
+chdir: /apps/bye_02
+environment: production
+address: 0.0.0.0
+port: 1002
+timeout: 30
+log: log/thin.log
+pid: tmp/pids/thin.pid
+max_conns: 1024
+max_persistent_conns: 512
+require: []
+wait: 30
+servers: 3
+user: bye_02
+group: bye_02
+daemonize: true

@@ -11,7 +11,7 @@ class Uni_Mind
     attr_reader :hostname, :address
 
     def initialize server
-      self.server = server
+      server server
       @address  = File.join("configs/servers/#{server.hostname}/templates")
     end
 
@@ -35,8 +35,7 @@ class Uni_Mind
         
         remote         = basename.gsub(',', '/') 
         remote_content = begin
-                           r = Unified_IO::Remote::File.new(remote)
-                           r.server = server
+                           r = Unified_IO::Remote::File.new(remote, server)
                            r.content
                          rescue Unified_IO::Remote::File::Not_Found
                            ''

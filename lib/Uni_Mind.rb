@@ -1,3 +1,4 @@
+require 'yaml'
 require "Uni_Mind/version"
 require "Uni_Arch"
 
@@ -29,7 +30,7 @@ class Uni_Mind
           
           env.create 'server',  Unified_IO::Remote::Server.new( s_name )
           extend Uni_Mind::Server
-          self.server = env.server
+          self.server env.server
           true
           
         end
@@ -42,6 +43,8 @@ class Uni_Mind
 end # === class Uni_Mind
 
 Uni_Mind::MODS.each { |mod| require "Uni_Mind/#{mod}" }
+require 'Uni_Mind/App'
+require 'Uni_Mind/Apps'
 require 'Uni_Mind/Server'
 require 'Uni_Mind/Group'
 require "Uni_Mind/ALL"
