@@ -1,8 +1,39 @@
 
 class Uni_Mind
   class App
+    
+    module Class_Methods
+      
+      def thin_config name, port, file_name = nil
+        file_name ||= name
+        file_path = "apps/#{name}/config/thin.#{file_name}.yml"
+        
+        raise Config_Already_Exists, file_path if File.exists?(file_path)
+        
+        cmd = %~
+          bundle exec
+          thin config 
+            -C #{File.expand_path file_path}
+            -p #{Integer port} 
+            -c /apps/#{name} 
+            -e production 
+            -u #{name} 
+            -g #{name} 
+            --servers #{2} 
+        ~.split.join(' ')
+        
+        Unified_IO::Local::Shell.new.run(cmd)
+        
+        new(file_path)
+      end
+      
+    end # === module Class_Methods
+    
+    extend Class_Methods
+    
     Invalid_Chdir  = Class.new(RuntimeError)
     Duplicate_Port = Class.new(RuntimeError)
+    Config_Already_Exists = Class.new(RuntimeError)
     Invalid_Port   = Class.new(RuntimeError)
     Invalid_User   = Class.new(RuntimeError)
     Invalid_Group  = Class.new(RuntimeError)
@@ -16,7 +47,8 @@ class Uni_Mind
       y = file_name
       @name = y[%r!/([^/]+)/config/!] && $1
       @file_name = file_name
-      h = YAML.load(File.read y)
+      
+      h = YAML.load(File.read File.expand_path(y))
       
       port = h['port'].to_i
       raise Invalid_Port, h.inspect if port < 1000
