@@ -69,3 +69,15 @@ describe "App :thin_config" do
   end
   
 end # === describe App :thin_config
+
+describe "UNI_MIND thin_config" do
+  
+  it 'generates thin file' do
+    name = "bye_#{rand 1000}"
+    BOX.mkdir "Mind/apps/#{name}/config" do |f|
+      BIN("thin_config #{name} 4567 uni")
+      File.exists?(File.join f, "thin.uni.yml").should == true
+    end
+  end
+  
+end # === describe UNI_MIND thin_config name port file_name

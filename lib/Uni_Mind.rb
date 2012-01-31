@@ -40,6 +40,11 @@ class Uni_Mind
     end
 
   end # === module Arch
+  
+  def thin_config *args
+    Uni_Mind::App.thin_config *args
+  end
+
 end # === class Uni_Mind
 
 Uni_Mind::MODS.each { |mod| require "Uni_Mind/#{mod}" }

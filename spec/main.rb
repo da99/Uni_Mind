@@ -13,6 +13,17 @@ FOLDER = "/tmp/Uni_Mind"
 class Box
   include Unified_IO::Local::Shell::DSL
   
+  def mkdir f
+    dir = File.join( FOLDER, f )
+    shell.run "mkdir -p #{dir}"
+    if block_given?
+      yield dir
+      shell.run "rm -r #{dir}" if File.exists?(dir)
+    end
+    
+    f
+  end
+
   def reset
     shell.run "
       rm -rf #{FOLDER}
