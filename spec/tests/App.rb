@@ -81,3 +81,25 @@ describe "UNI_MIND thin_config" do
   end
   
 end # === describe UNI_MIND thin_config name port file_name
+
+describe "UNI_MIND sin_app" do
+  
+  it 'does not overwrite existing files.'
+  it 'creates folder /app/name'
+  it 'creates folder /app/name/config'
+  it 'creates folder /app/name/public'
+  it 'creates file   /app/name/config.ru'
+  it 'creates file   /app/name/name.rb'
+  it 'creates file   /app/name/Gemfile'
+  it 'creates file   /app/name/bin'
+  it 'changes the ruby executable in bin files to ruby-local-exec'
+  
+end # === describe UNI_MIND sin_app
+
+describe "UNI_MIND deploy_bundles" do
+  
+  it 'creates /bin in each dir in /apps'
+  it 'sets each sheband to ruby-local-exec'
+  it 'packages the gems for each app'
+  
+end # === describe UNI_MIND deploy_bundles

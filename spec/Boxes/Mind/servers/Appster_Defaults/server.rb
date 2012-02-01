@@ -1,0 +1,4 @@
+Hash[
+  :group    => 'Appster'
+]
+
