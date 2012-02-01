@@ -1,123 +1,107 @@
 
 class Uni_Mind
-  
-  module Server
-    MODS.each { |m|
-      include Uni_Mind.const_get(m.to_sym)::Server
-    }
+  class Server
+    module Base
+      MODS.each { |m|
+        include Uni_Mind.const_get(m.to_sym)::Server
+      }
+    end # === module Base
   end # === module Server
-  
 end # === class Uni_Mind
 
 
 
-class Unified_IO
-  
-  module Remote
+class Uni_Mind
+  class Server
 
-    class Server
-      
-      module Class_Methods
+    module Class_Methods
 
-        include Base_Class_Methods
+      include Base_Class_Methods
 
-        def config_file name
-          super :server, name
-        end
+      def config_file name
+        super :server, name
+      end
 
-        def server? name
-          pattern = "/#{name.downcase}/"
-          
-          !! config_file('*').detect { |file|
-            file.downcase[ pattern ]
-          }
-        end
+      def server? name
+        pattern = "/#{name.downcase}/"
 
-      end # === module Class_Methods
+        !! config_file('*').detect { |file|
+          file.downcase[ pattern ]
+        }
+      end
 
-      Not_Found  = Class.new(RuntimeError)
-      Duplicates = Class.new(RuntimeError)
-      Invalid_Property = Class.new(RuntimeError)
+    end # === module Class_Methods
 
-      PROPS = [
-        :ip, :port, :hostname, 
-        :group,
-        :user, :default, 
-        :login, :root, :password
-      ]
+    extend Class_Methods
+    
+    include Unified_IO::Remote::Server::Base
 
-      extend Class_Methods
-      attr_reader :origin, *PROPS
-      attr_accessor :os_name
+    def initialize file_or_hash, opts = {}
+      hash = case file_or_hash
 
-      def initialize file_or_hash, opts = {}
-        hash = case file_or_hash
+             when Hash
+               file_or_hash
 
-               when Hash
-                 file_or_hash
+             when String
 
-               when String
+               if ::File.file?(file_or_hash)
+                 server = eval(::File.read file_or_hash )
+                 server[:hostname] ||= (file_or_hash[%r!servers/([^/]+)/server.rb!] && $1).downcase
+                 server
 
-                 if ::File.file?(file_or_hash)
-                   server = eval(::File.read file_or_hash )
-                   server[:hostname] ||= (file_or_hash[%r!servers/([^/]+)/server.rb!] && $1).downcase
-                   server
-                  
-                 else
-                   server = eval( ::File.read( self.class.config_file file_or_hash ) )
-                   server[:hostname] ||= file_or_hash.downcase
-                  
-                   if opts[:root]
-                     server[:root] = true
-                   end
-
-                   server
-                 end
-                
                else
-                 raise "Unknown data type: #{file_or_hash.inspect}"
-                
+                 server = eval( ::File.read( self.class.config_file file_or_hash ) )
+                 server[:hostname] ||= file_or_hash.downcase
+
+                 if opts[:root]
+                   server[:root] = true
+                 end
+
+                 server
                end
 
-        invalid = hash.keys - PROPS
-        raise Invalid_Property, "Invalid keys: #{invalid.inspect}" unless invalid.empty?
+             else
+               raise "Unknown data type: #{file_or_hash.inspect}"
 
-        if hash.has_key?(:password) && hash[:password].strip.empty?
-          raise Invalid_Property, ":password can't be set as empty string."
-        end
+             end
 
-        if hash[:root]
-          hash[:login] = 'root'
-          hash.delete :root
-        end
+      invalid = hash.keys - PROPS
+      raise Invalid_Property, "Invalid keys: #{invalid.inspect}" unless invalid.empty?
 
-        if ENV['PASSWORD']
-          hash[:password] = ENV['PASSWORD']
-          hash[:login] = 'root'
-        end
+      if hash.has_key?(:password) && hash[:password].strip.empty?
+        raise Invalid_Property, ":password can't be set as empty string."
+      end
 
-        @origin = hash
-        origin.keys.each { |key|
-          instance_variable_set :"@#{key}", origin[key]
-        }
+      if hash[:root]
+        hash[:login] = 'root'
+        hash.delete :root
+      end
 
-        @port ||= '22'
-        if !group
-          raise Invalid_Property, "Group must be set for server #{hostname}."
-        end
-        @group = group.to_s.strip
+      if ENV['PASSWORD']
+        hash[:password] = ENV['PASSWORD']
+        hash[:login] = 'root'
+      end
 
-        if !hostname.is_a?(String)
-          raise Invalid_Property, "Invalid hostname: #{hostname.inspect}"
-        end
+      @origin = hash
+      origin.keys.each { |key|
+        instance_variable_set :"@#{key}", origin[key]
+      }
 
-        @ip    ||= @hostname
-        @user  ||= @login
-        @login ||= @user
+      @port ||= '22'
+      if !group
+        raise Invalid_Property, "Group must be set for server #{hostname}."
+      end
+      @group = group.to_s.strip
 
-      end # === def initialize
+      if !hostname.is_a?(String)
+        raise Invalid_Property, "Invalid hostname: #{hostname.inspect}"
+      end
 
-    end # === class Server
-  end # === module Remote
+      @ip    ||= @hostname
+      @user  ||= @login
+      @login ||= @user
 
-end # === module Unified_IO
+    end # === def initialize
+
+  end # === class Server
+end # === class Uni_Mind

@@ -10,9 +10,15 @@ Unified_IO::Local::Shell.quiet
 #
 FOLDER = "/tmp/Uni_Mind"
   
+require 'open3'
+
 class Box
   include Unified_IO::Local::Shell::DSL
   
+  def chdir
+    Dir.chdir("#{FOLDER}/Mind") { yield }
+  end
+
   def mkdir f
     dir = File.join( FOLDER, f )
     shell.run "mkdir -p #{dir}"
@@ -48,6 +54,24 @@ end
 
 def chdir 
   Dir.chdir("#{FOLDER}/Mind") { yield }
+end
+
+def ruby_e cmd
+  file = "#{FOLDER}/Mind/delete_me_perf_#{rand(100000)}.rb"
+
+  File.open(file, 'w') { |io|
+    io.write %~
+    require 'Uni_Mind'
+    #{cmd}
+    ~
+  }
+
+  data = ''
+  Open3.popen3("cd #{FOLDER}/Mind && bundle exec ruby #{file}") { |i, o, e, t|
+    data << o.read
+    data << e.read
+  }
+  data.strip
 end
 
 def BIN cmd, pre = ''

@@ -1,89 +1,31 @@
 
-module Unified_IO
-  module Remote
+class Uni_Mind
 
-		module Base_Class_Methods
+  class Server_Group
 
-			include Checked::DSL
-			
-			def config_file type, name
-				if name == '*'
-					return ::Dir.glob("#{type}s/*/#{type}.rb")
-				end
+    module Base
 
-				File_Path!( name ) unless name == '*'
-				default_file = "#{type}s/#{name}/#{type}.rb"
-				return default_file if ::File.exists?(default_file)
+      attr_reader :servers, :name
 
-				target = default_file.downcase
-				files = meta_config_file(type, '*').select { |file| file.downcase == target } 
-
-				raise Duplicates, files.inspect if files.size > 1
-				files.first || default_file
-			end
-
-			def all
-				config_file( '*' ).map { |file|
-					new( file )
-				}
-			end
-
-		end # === module Base_Class_Methods
-
-    class Server_Group
-      
-      Not_Found  = Class.new(RuntimeError)
-      Duplicates = Class.new(RuntimeError)
-
-      module Class_Methods
+      def initialize raw_name
+        raise Server_Group::Not_Found, name unless File.directory?("groups/#{raw_name}")
         
-				include Base_Class_Methods
-			
-				def config_file name
-					super :group, name
-				end
+        @name = raw_name
+        @servers = config_file( '*' ).map { |file|
 
-        def group? name
-          c = config_file( name )
-					::File.file?(c) ||
-						::File.directory?( ::File.dirname c )
-        end
+          server = ::Uni_Mind::Server.new( file )
 
-      end # === module Class_Methods
-      
-      extend Class_Methods
-      
-      module Base
-        
-        attr_reader :servers, :name
+          if server.group == name
+            server
+          else
+            nil
+          end
 
-        def initialize raw_name
-          @name = raw_name
-          @servers = config_file( '*' ).map { |file|
+        }.compact
 
-            hostname = begin
-                         pieces = file.split('/')
-                         pieces.pop
-                         pieces.pop
-                       end
-            
-            server = Unified_IO::Remote::Server.new( hostname )
-          
-            if server.group.to_s == name.to_s
-              server
-            else
-              nil
-            end
-              
-          }.compact
+      end
 
-          raise Server_Group::Not_Found, name if servers.empty?
-        end
+    end # === module Base
 
-      end # === module Base
-      
-      include Base
-
-    end # === class Server
-  end # === module Remote
-end # === module Unified_IO
+  end # === class Server
+end # === class Uni_Mind

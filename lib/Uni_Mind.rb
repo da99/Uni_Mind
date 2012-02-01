@@ -48,17 +48,16 @@ class Uni_Mind
 end # === class Uni_Mind
 
 Uni_Mind::MODS.each { |mod| require "Uni_Mind/#{mod}" }
-require 'Uni_Mind/App'
 require 'Uni_Mind/Apps'
+require 'Uni_Mind/App'
+require 'Uni_Mind/Server_Group'
 require 'Uni_Mind/Server'
 require 'Uni_Mind/Group'
 require "Uni_Mind/ALL"
 
-%w{ groups servers }.each { |cat|
-  %w{ Uni_Arch uni_arch Uni_Mind uni_mind }.each { |uni|
-    Dir.glob("configs/#{cat}/*/#{uni}.rb").each { |file|
-      require File.expand_path(file).sub(".rb", '')
-    }
+%w{ groups servers }.each { |type|
+  Dir.glob("#{type}/*/Uni_Mind.rb").each { |path|
+    require File.expand_path(path.sub('.rb',''))
   }
 }
 
