@@ -2,106 +2,29 @@
 class Uni_Mind
   class Server
     module Base
-      MODS.each { |m|
-        include Uni_Mind.const_get(m.to_sym)::Server
-      }
+
+      def print_info prop
+        print "Server info: #{env.server.send prop }\n"
+      end
+      
+      def server
+        @server ||= begin
+                      config = Hash[]
+                      update = lambda { |file|
+                        if File.exists?(file)
+                          config.update eval(File.read(file), nil, file)
+                        end
+                      }
+                      
+                      update.call "servers/all.rb" 
+                      update.call "servers/#{self.class.name}/server.rb"
+                      update.call "groups/#{config[:group]}/server.rb"
+                      
+                      config[:custom] = [:group]
+                      Unified_IO::Remote::Server.new(config)
+                    end
+      end
+      
     end # === module Base
-  end # === module Server
-end # === class Uni_Mind
-
-
-
-class Uni_Mind
-  class Server
-
-    module Class_Methods
-
-      include Base_Class_Methods
-
-      def config_file name
-        super :server, name
-      end
-
-      def server? name
-        pattern = "/#{name.downcase}/"
-
-        !! config_file('*').detect { |file|
-          file.downcase[ pattern ]
-        }
-      end
-
-    end # === module Class_Methods
-
-    extend Class_Methods
-    
-    include Unified_IO::Remote::Server::Base
-
-    def initialize file_or_hash, opts = {}
-      hash = case file_or_hash
-
-             when Hash
-               file_or_hash
-
-             when String
-
-               if ::File.file?(file_or_hash)
-                 server = eval(::File.read file_or_hash )
-                 server[:hostname] ||= (file_or_hash[%r!servers/([^/]+)/server.rb!] && $1).downcase
-                 server
-
-               else
-                 server = eval( ::File.read( self.class.config_file file_or_hash ) )
-                 server[:hostname] ||= file_or_hash.downcase
-
-                 if opts[:root]
-                   server[:root] = true
-                 end
-
-                 server
-               end
-
-             else
-               raise "Unknown data type: #{file_or_hash.inspect}"
-
-             end
-
-      invalid = hash.keys - PROPS
-      raise Invalid_Property, "Invalid keys: #{invalid.inspect}" unless invalid.empty?
-
-      if hash.has_key?(:password) && hash[:password].strip.empty?
-        raise Invalid_Property, ":password can't be set as empty string."
-      end
-
-      if hash[:root]
-        hash[:login] = 'root'
-        hash.delete :root
-      end
-
-      if ENV['PASSWORD']
-        hash[:password] = ENV['PASSWORD']
-        hash[:login] = 'root'
-      end
-
-      @origin = hash
-      origin.keys.each { |key|
-        instance_variable_set :"@#{key}", origin[key]
-      }
-
-      @port ||= '22'
-      if !group
-        raise Invalid_Property, "Group must be set for server #{hostname}."
-      end
-      @group = group.to_s.strip
-
-      if !hostname.is_a?(String)
-        raise Invalid_Property, "Invalid hostname: #{hostname.inspect}"
-      end
-
-      @ip    ||= @hostname
-      @user  ||= @login
-      @login ||= @user
-
-    end # === def initialize
-
   end # === class Server
 end # === class Uni_Mind

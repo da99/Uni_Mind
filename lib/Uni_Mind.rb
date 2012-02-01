@@ -13,32 +13,6 @@ class Uni_Mind
 
     include Uni_Arch::Arch
 
-    def initialize *args
-      super
-      
-      k = request.klass.name
-      [ k, k.downcase, k.capitalize, k.upcase ].detect { |s_name| 
-        
-        if Unified_IO::Remote::Server.group?(s_name)
-          
-          env.create 'group',   Unified_IO::Remote::Server_Group.new( s_name )
-          env.create 'servers', env.group.servers
-          request.klass.send( :include, Uni_Mind::Group ) #unless request.klass.included_modules.include?(Uni_Mind::Group)
-          true
-          
-        elsif Unified_IO::Remote::Server.server?( s_name )
-          
-          env.create 'server',  Unified_IO::Remote::Server.new( s_name )
-          extend Uni_Mind::Server
-          self.server env.server
-          true
-          
-        end
-        
-      }
-      
-    end
-
   end # === module Arch
   
   def thin_config *args
@@ -55,9 +29,20 @@ require 'Uni_Mind/Server'
 require 'Uni_Mind/Group'
 require "Uni_Mind/ALL"
 
-%w{ groups servers }.each { |type|
-  Dir.glob("#{type}/*/Uni_Mind.rb").each { |path|
-    require File.expand_path(path.sub('.rb',''))
+%w{ group server }.each { |type|
+  
+  Dir.glob("#{type}s/*/Uni_Mind.rb").each { |path|
+    
+    klass_name = File.basename( File.dirname(path) )
+    require File.expand_path( "#{type}s/#{klass_name}/Uni_Mind" )
+    
+    eval %~
+      class #{klass_name}
+        include "Uni_Mind::#{type.capitalize}::Base"
+      end
+    ~, nil, __FILE__, __LINE__ - 3
+    
   }
+  
 }
 

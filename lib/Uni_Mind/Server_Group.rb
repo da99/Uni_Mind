@@ -7,22 +7,22 @@ class Uni_Mind
 
       attr_reader :servers, :name
 
-      def initialize raw_name
-        raise Server_Group::Not_Found, name unless File.directory?("groups/#{raw_name}")
-        
-        @name = raw_name
-        @servers = config_file( '*' ).map { |file|
+      def name 
+        self.class.name
+      end
 
-          server = ::Uni_Mind::Server.new( file )
-
-          if server.group == name
-            server
-          else
-            nil
-          end
-
-        }.compact
-
+      def servers
+        @servers ||= begin
+                      Dir.glob("servers/*").map { |path|
+                        next unless File.directory?(path)
+                        
+                        klass_name = File.dirname(path)
+                        s = Uni_Mind::Server.new(klass_name)
+                        next unless s.group == name
+                        
+                        Object.const_get klass_name
+                      }.compact
+                     end
       end
 
     end # === module Base
