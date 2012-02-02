@@ -9,16 +9,18 @@ class Uni_Mind
       
       def server
         @server ||= begin
+                      last = Hash[]
                       config = Hash[]
-                      update = lambda { |file|
+                      update = lambda { |target, file|
                         if File.exists?(file)
-                          config.update eval(File.read(file), nil, file)
+                          target.update eval(File.read(file), nil, file)
                         end
                       }
                       
-                      update.call "servers/all.rb" 
-                      update.call "servers/#{self.class.name}/server.rb"
-                      update.call "groups/#{config[:group]}/server.rb"
+                      update.call last, "servers/#{self.class.name}/server.rb"
+                      update.call config, "servers/All.rb" 
+                      update.call config, "groups/#{last[:group]}/server.rb"
+                      config.update last
                       
                       config[:hostname] ||= self.class.name.downcase
                       config[:custom] = [:group]

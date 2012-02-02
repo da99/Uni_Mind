@@ -10,9 +10,9 @@ class Uni_Mind
 
     attr_reader :hostname, :address
 
-    def initialize server
-      server server
-      @address  = File.join("configs/servers/#{server.hostname}/templates")
+    def initialize app
+      server app.server
+      @address  = File.join("servers/#{app.class}/templates")
     end
 
     def addr raw_name, file_name = :none
@@ -27,7 +27,6 @@ class Uni_Mind
     end
 
     def sync
-
       Dir.glob(File.join addr(:latest), '/*').each { |latest|
         next unless File.file?(latest)
 

@@ -10,7 +10,7 @@ class Uni_Mind
       private # ====================================================
 
       def templates
-        @templates ||= Template_Dir.new(server)
+        @templates ||= Template_Dir.new(self)
       end
 
       public # =====================================================

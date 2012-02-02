@@ -1,58 +1,26 @@
 
+describe "UNI_MIND Group/action/arg" do
 
-describe "UNI_MIND */servers" do
-  
-  it 'sends message to all servers' do
-    target = ''
-    chdir {
-      target = Dir.glob("servers/*")
-      .map { |path| 
-        next unless File.directory?(path)
-        "Server info: #{File.basename(path)}" 
-      }
-      .compact
-      .join("\n")
-    }
-    
-    BIN(' */servers/print_info/hostname ').should.match %r!#{Regexp.escape target}!i
+  it "sends custom command to specified group" do
+    target = "Server info: s2\nServer info: appster_defaults"
+    BIN("/Appster/print_info/hostname/").should.match %r!#{Regexp.escape target}!
   end
   
-end # === describe Server_Group.all
-
-
-describe "UNI_MIND */groups" do
-  
-  it 'sends message to all groups' do
-    target = ''
-    chdir {
-      target = Dir.glob("groups/*")
-      .map { |path| 
-        next unless File.directory?(path)
-        "Group info: #{File.basename(path)}" 
-      }
-      .compact
-      .join("\n")
-    }
+  it "raises 'Uni_Arch::Not_Found, path' if none of the servers fulfills request" do
+    m = lambda { BIN("Appster hello_db") }
+    .should.raise(Unified_IO::Local::Shell::Failed)
+    .message
     
-    BIN(' */groups/info/name ').should.match %r!#{Regexp.escape target}!i
+    m.should.match %r!: /?Appster/hello_db \(Uni_Arch::Not_Found!
   end
   
-  it 'sends message to servers in group if it does not respond to message' do
-    targets = ''
-    chdir {
-      targets = Dir.glob("servers/*")
-      .map { |path| 
-        next unless File.directory?(path)
-        "Server info: #{File.basename(path)}" 
-      }
-      .compact
-    }
+  it "raises 'Uni_Arch::Not_Found, path' if at least one of the servers does not fulfill" do
+    m = lambda { BIN("Appster s1_info") }
+    .should.raise(Unified_IO::Local::Shell::Failed)
+    .message
     
-    results = BIN(' */groups/print_info/hostname ')
-    targets.each { |t|
-      results.should.match %r!#{Regexp.escape t}!i
-    }
+    m.should.not.match %r!S1/s1_info!i 
+    m.should.match %r!S2/s1_info!
   end
   
-end # === describe Server_Group.all
-
+end # === describe UNI_MIND Group/action/arg

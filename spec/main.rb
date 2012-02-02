@@ -56,6 +56,15 @@ def chdir
   Dir.chdir("#{FOLDER}/Mind") { yield }
 end
 
+def rmfile file
+  r = chdir {
+    `rm #{file}`
+    yield file
+  }
+  BOX.reset
+  r
+end
+
 def ruby_e cmd
   file = "#{FOLDER}/Mind/delete_me_perf_#{rand(100000)}.rb"
 
@@ -89,6 +98,17 @@ end
 def BIN_SKIP_IP_CHECK cmd
   BIN cmd, "SKIP_IP_CHECK=true"
 end
+
+HOSTNAMES = %w~
+  s1 
+  s2 
+  bdrm
+  appster_defaults 
+  bdrm 
+  all_defaults 
+  db1 
+  no_hostname
+~.sort
 
 def exists? file
   File.exists?(File.join FOLDER, file)

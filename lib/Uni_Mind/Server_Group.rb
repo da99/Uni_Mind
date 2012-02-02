@@ -48,7 +48,11 @@ class Uni_Mind
         if invalid.empty?
           response.body @apps.map(&:fulfill)
         else
-          raise Uni_Arch::Not_Found, invalid.map { |i| i.request.path }.join(', ')
+          if invalid.size == servers.size
+            raise Uni_Arch::Not_Found, request.path
+          else
+            raise Uni_Arch::Not_Found, invalid.join(', ')
+          end
         end
       end
 

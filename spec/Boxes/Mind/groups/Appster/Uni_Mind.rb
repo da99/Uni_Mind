@@ -1,3 +1,8 @@
 class Appster
   include Uni_Mind::Arch
-end
+  
+  def hello msg
+    print "Hiya, #{msg}\n"
+  end
+
+end # === class Appster
