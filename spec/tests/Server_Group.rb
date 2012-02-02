@@ -1,41 +1,58 @@
 
-describe "Server_Group.new" do
-  
-  it 'grabs all servers within that group' do
-    chdir {
-      group = Uni_Mind::Server_Group.new("Appster")
-      group.servers.map(&:hostname).sort.should == %w{ s1 s2 }
-    }
-  end
-  
-end # === describe Server_Group
 
-describe "Server_Group.all" do
+describe "UNI_MIND */servers" do
   
-  it 'grabs all servers for group "*"' do
-    ruby_e(%~
-      puts( 
-        Uni_Mind::Server_Group.all
-        .map(&:to_s).sort.inspect
-      )
-    ~).should == %w{ Appster Bermuda Db }.inspect
+  it 'sends message to all servers' do
+    target = ''
+    chdir {
+      target = Dir.glob("servers/*")
+      .map { |path| 
+        next unless File.directory?(path)
+        "Server info: #{File.basename(path)}" 
+      }
+      .compact
+      .join("\n")
+    }
+    
+    BIN(' */servers/print_info/hostname ').should.match %r!#{Regexp.escape target}!i
   end
   
 end # === describe Server_Group.all
 
-describe "Server_Group.group?" do
-  
-  it "returns true if dir/file exists for group." do
-    chdir {
-      Uni_Mind::Server_Group.group?('Appster').should.be === true
-    }
-  end
 
-  it "returns false if dir/file does not exist." do
+describe "UNI_MIND */groups" do
+  
+  it 'sends message to all groups' do
+    target = ''
     chdir {
-      Uni_Mind::Server_Group.group?('DATA').should.be === false
+      target = Dir.glob("groups/*")
+      .map { |path| 
+        next unless File.directory?(path)
+        "Group info: #{File.basename(path)}" 
+      }
+      .compact
+      .join("\n")
+    }
+    
+    BIN(' */groups/info/name ').should.match %r!#{Regexp.escape target}!i
+  end
+  
+  it 'sends message to servers in group if it does not respond to message' do
+    targets = ''
+    chdir {
+      targets = Dir.glob("servers/*")
+      .map { |path| 
+        next unless File.directory?(path)
+        "Server info: #{File.basename(path)}" 
+      }
+      .compact
+    }
+    
+    results = BIN(' */groups/print_info/hostname ')
+    targets.each { |t|
+      results.should.match %r!#{Regexp.escape t}!i
     }
   end
   
-end # === describe Server_Group.group?
+end # === describe Server_Group.all
 

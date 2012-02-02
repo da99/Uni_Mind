@@ -6,7 +6,6 @@ require 'Uni_Mind/Template_Dir'
 
 class Uni_Mind
 
-  MODS = %w{ Inspect Templates}
   include Uni_Arch::Arch
   
   module Arch
@@ -15,22 +14,43 @@ class Uni_Mind
 
   end # === module Arch
   
-  def thin_config *args
-    Uni_Mind::App.thin_config *args
-  end
+  module Base
+    
+    def initialize *pieces
+      new_pieces = pieces.map { |obj|
+        case obj
+        when '*'
+          'All'
+        when String
+          obj.split('/').map { |str| str == '*' ? 'All' : str }.join('/')
+        else
+          obj
+        end
+      }
+      
+      super(*new_pieces)
+    end
+
+    def thin_config *args
+      Uni_Mind::App.thin_config *args
+    end
+    
+  end # === module Base
+  
+  include Base
 
 end # === class Uni_Mind
 
-Uni_Mind::MODS.each { |mod| require "Uni_Mind/#{mod}" }
+require 'Uni_Mind/Templates'
 require 'Uni_Mind/Apps'
 require 'Uni_Mind/App'
 require 'Uni_Mind/Server_Group'
 require 'Uni_Mind/Server'
-require 'Uni_Mind/Group'
-require "Uni_Mind/ALL"
+require "Uni_Mind/All"
 
 %w{ group server }.each { |type|
   
+  namespace = ['server', type].uniq.map(&:capitalize).join('_')
   Dir.glob("#{type}s/*/Uni_Mind.rb").each { |path|
     
     klass_name = File.basename( File.dirname(path) )
@@ -38,7 +58,7 @@ require "Uni_Mind/ALL"
     
     eval %~
       class #{klass_name}
-        include "Uni_Mind::#{type.capitalize}::Base"
+        include Uni_Mind::#{namespace}::Base
       end
     ~, nil, __FILE__, __LINE__ - 3
     

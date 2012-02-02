@@ -11,18 +11,45 @@ class Uni_Mind
         self.class.name
       end
 
+      def info prop
+        print "Group info: #{send prop}\n"
+      end
+
       def servers
         @servers ||= begin
                       Dir.glob("servers/*").map { |path|
                         next unless File.directory?(path)
                         
-                        klass_name = File.dirname(path)
-                        s = Uni_Mind::Server.new(klass_name)
-                        next unless s.group == name
+                        klass_name = File.basename(path)
+                        klass = Object.const_get klass_name
+                        a = klass.new(klass_name, request.method_name, request.args)
+                        next unless a.server.group == name
                         
-                        Object.const_get klass_name
+                        klass
                       }.compact
                      end
+      end
+      
+      def fulfill
+        return super if respond_to?(request.method_name)
+        
+        invalid = []
+        
+        @apps ||= servers.map { |s| 
+          a = Uni_Mind.new(s.name, request.method_name, *request.args) 
+          if s.public_instance_methods.include?(request.method_name)
+            a
+          else
+            invalid << a.request.path
+            next
+          end
+        }
+
+        if invalid.empty?
+          response.body @apps.map(&:fulfill)
+        else
+          raise Uni_Arch::Not_Found, invalid.map { |i| i.request.path }.join(', ')
+        end
       end
 
     end # === module Base

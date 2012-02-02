@@ -4,7 +4,7 @@ class Uni_Mind
     module Base
 
       def print_info prop
-        print "Server info: #{env.server.send prop }\n"
+        print "Server info: #{server.send prop }\n"
       end
       
       def server
@@ -20,8 +20,9 @@ class Uni_Mind
                       update.call "servers/#{self.class.name}/server.rb"
                       update.call "groups/#{config[:group]}/server.rb"
                       
+                      config[:hostname] ||= self.class.name.downcase
                       config[:custom] = [:group]
-                      Unified_IO::Remote::Server.new(config)
+                      Unified_IO::Remote::Server.new(config, :custom=>[:group])
                     end
       end
       
