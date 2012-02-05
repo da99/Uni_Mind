@@ -3,9 +3,13 @@
 
 require 'Uni_Mind' 
 
-puts "", 'Executing: ', ARGV.join(' ')
+name = File.basename File.expand_path('.')
+args = (name, *ARGV)
+arg  = File.join *args
 
-app = Uni_Mind.new( *ARGV )
+puts "", 'Executing: ', arg
+
+app = Uni_Mind.new( arg )
 app.fulfill
 
 at_exit {

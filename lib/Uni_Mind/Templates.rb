@@ -1,7 +1,7 @@
 
 class Uni_Mind
-  class Server
-    module Base
+  module Server
+    module Arch
 
       def upload_templates
         templates.sync
@@ -20,9 +20,9 @@ class Uni_Mind
           shell "mkdir -p #{d}"
         }
 
-      %w{ latest origins pending }.each { |dir|
-        must_be_dir File.join( 'templates', server.hostname, dir )
-      }
+        %w{ latest origins pending }.each { |dir|
+          must_be_dir File.join( 'templates', server.hostname, dir )
+        }
       end
 
       def download_as_template far_path
@@ -91,11 +91,11 @@ class Uni_Mind
       def download_as_templates 
 
         hash = Hash[
-        '/etc/ssh/sshd_config' => 'sshd_config.sh',
-        '/etc/sudoers'         => 'visudo.txt',
-        '~/.bashrc'            => 'bashrc.sh',
-        '~/.bash_profile'      => 'bash_profile.sh',
-        '~/.bash_logout'       => 'bash_logout.sh'
+          '/etc/ssh/sshd_config' => 'sshd_config.sh',
+          '/etc/sudoers'         => 'visudo.txt',
+          '~/.bashrc'            => 'bashrc.sh',
+          '~/.bash_profile'      => 'bash_profile.sh',
+          '~/.bash_logout'       => 'bash_logout.sh'
         ]
 
         do_commit = false
@@ -104,19 +104,19 @@ class Uni_Mind
 
         hash.each { | far, raw_local|
 
-          local = "templates/#{raw_local}"
-          shell %! touch #{local} !
+                local = "templates/#{raw_local}"
+                shell %! touch #{local} !
 
-          original = File.read(local)
-          content = ssh %! sudo cat #{far} !
+                original = File.read(local)
+                content = ssh %! sudo cat #{far} !
 
-          if original.strip.split != content.strip.split
-            File.open( local, 'w') do |io|
-              io.write content
-            end
+                if original.strip.split != content.strip.split
+                  File.open( local, 'w') do |io|
+                    io.write content
+                  end
 
-            do_commit = true
-          end
+                  do_commit = true
+                end
 
         } # === hash.each
 
@@ -125,7 +125,7 @@ class Uni_Mind
             git reset
             git add templates/*
             git commit -m "Updated template files."
-          ~) 
+                ~) 
         end
 
       end # === def download_to_templates
@@ -137,11 +137,11 @@ class Uni_Mind
           git reset
           git add configs/servers/*/templates/*
           git commit -m "Backed up files from server."
-        !.strip.split("\n").join(' && ')
+          !.strip.split("\n").join(' && ')
         end
 
       end 
 
-    end # === module Base
-  end # === class Templates
+    end # === module Arch
+  end # === module Server
 end # === class Uni_Mind

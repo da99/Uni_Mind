@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 
 opts = eval(File.read("conf/servers/SERVER_01.rb"))
 default_run_options[:pty] = true 

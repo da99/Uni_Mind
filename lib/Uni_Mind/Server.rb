@@ -1,7 +1,7 @@
 
 class Uni_Mind
-  class Server
-    module Base
+  module Server
+    module Arch
 
       def print_info prop
         print "Server info: #{server.send prop }\n"
@@ -28,6 +28,6 @@ class Uni_Mind
                     end
       end
       
-    end # === module Base
-  end # === class Server
+    end # === module Arch
+  end # === module Server
 end # === class Uni_Mind

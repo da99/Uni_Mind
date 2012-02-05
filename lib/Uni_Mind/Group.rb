@@ -1,9 +1,11 @@
 
+# 
+# Modules for adding server group functionality
+# to a class.
+#
 class Uni_Mind
-
-  class Server_Group
-
-    module Base
+  module Group
+    module Arch
 
       attr_reader :servers, :name
 
@@ -56,7 +58,6 @@ class Uni_Mind
         end
       end
 
-    end # === module Base
-
-  end # === class Server
+    end # === module Arch
+  end # === module Group
 end # === class Uni_Mind
