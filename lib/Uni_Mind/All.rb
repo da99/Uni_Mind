@@ -1,44 +1,66 @@
 
 class Uni_Mind
-  class All
-    
-    module Class_Methods
-      
-      def all type
-        Dir.glob("#{type}/*").map { |path|
-          next unless File.directory?(path)
-          Object.const_get(File.basename(path))
-        }.compact
-      end
-      
-      def groups
-        all :groups
-      end
 
-      def servers
-        all(:servers)
-      end
-      
-    end # === module Class_Methods
-    
-    extend Class_Methods
-    
+  module Server
     Duplicates = Class.new(RuntimeError)
-    Not_Found  = Class.new(RuntimeError)
+  end
 
-    include Uni_Mind::Arch
+  module Arch
+
+    def initialize *raw
+      # Load classes for server groups and servers.
+      groups
+      servers
+      
+      super(*raw)
+    end
+
+    def request!
+      if request.method_name == '*'
+        request.method_name! "all_#{request.args.shift}"
+      end
+      
+      super
+    end
+
+    def thin_config *args
+      Uni_Mind::App.thin_config *args
+    end
+
+    def require_classes type
+      Dir.glob("#{type}/*").map { |path|
+        name = File.basename(path).sub('.rb','').to_sym
+        next unless File.directory?(path)
+        require "./#{type}/#{name}/#{name}"
+        
+        Object.const_get(name)
+      }.compact
+    end
 
     def servers *args
-      self.class.servers.each { |s|
-        Uni_Mind.new(s.name, *args).fulfill
-      }
+      @servers ||= require_classes(:servers) 
     end
 
     def groups *args
-      self.class.groups.each { |g|
-        Uni_Mind.new(g.name, *args).fulfill
+      @groups ||= require_classes(:groups)
+    end
+
+    def all *args
+      send "all_#{args.shift}", *args
+    end
+
+    def all_servers *args
+      servers.each { |s|
+        Uni_Mind.new(File.join s.name, *args).fulfill
       }
     end
 
-  end # === class ALL
+    def all_groups *args
+      groups.each { |g|
+        Uni_Mind.new(File.join g.name, *args).fulfill
+      }
+    end
+
+  end # === module Uni_Mind
+  
 end # === class Uni_Mind

@@ -4,11 +4,12 @@
 require 'Uni_Mind' 
 
 name = File.basename File.expand_path('.')
-args = (name, *ARGV)
+args = [name] + ARGV
 arg  = File.join *args
 
 puts "", 'Executing: ', arg
 
+require "./#{name}"
 app = Uni_Mind.new( arg )
 app.fulfill
 

@@ -1,4 +1,5 @@
 class Appster
+  
   include Uni_Mind::Arch
   
   def hello msg

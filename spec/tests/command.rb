@@ -9,7 +9,17 @@ class Aok
 end # === class Test_It < Sinatra::Base
 
 
-describe "Custom command" do
+describe "BIN args" do
+  
+  it "loads a file with the same name as the directory" do
+    target = 
+    BIN("/Appster/hello/Uni_Mind/").split("\n").last
+    .should.be == "Hiya, Uni_Mind"
+  end
+  
+end # === BIN args
+
+describe "Uni_Mind.new(path).fulfill" do
   
   after {
     glob("*/to_appster.rb").each { |file|
@@ -18,13 +28,9 @@ describe "Custom command" do
   }
   
   it 'executes command that returns result' do
-    app = Uni_Mind.new("/aok/aok?")
-    app.fulfill.should.be == 'aok'
-  end
-  
-  it 'executes command' do
-    target = "Hiya, Uni_Mind"
-    BIN("/Appster/hello/Uni_Mind/").split("\n").last.should.be == target
+    Uni_Mind.new("/aok/aok?").fulfill
+    .should.be == 'aok'
   end
   
 end # === describe Custom command
+
