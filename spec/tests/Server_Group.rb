@@ -11,7 +11,7 @@ describe "UNI_MIND Group/action/arg" do
     .should.raise(Unified_IO::Local::Shell::Failed)
     .message
     
-    m.should.match %r!: /?Appster/hello_db \(Uni_Arch::Not_Found!
+    m.should.match %r!: /?Appster/hello_db for all Appster servers \(Uni_Arch::Not_Found\)!
   end
   
   it "raises 'Uni_Arch::Not_Found, path' if at least one of the servers does not fulfill" do

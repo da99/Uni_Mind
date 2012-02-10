@@ -7,7 +7,13 @@ class Uni_Mind
   module Group
     module Arch
 
-      attr_reader :servers, :name
+      attr_reader :name
+
+      def request!
+        r = super
+        request.method_name!
+        r
+      end
 
       def name 
         self.class.name
@@ -17,17 +23,20 @@ class Uni_Mind
         print "Group info: #{send prop}\n"
       end
 
+      def server_klasss
+        @server_klasss ||= servers.map(&:class)
+      end
+
       def servers
         @servers ||= begin
                       Dir.glob("servers/*").map { |path|
                         next unless File.directory?(path)
                         
-                        klass_name = File.basename(path)
-                        klass = Object.const_get klass_name
-                        a = klass.new(klass_name, request.method_name, request.args)
+                        klass = Object.const_get File.basename(path)
+                        a = klass.new(klass, request.method_name, *request.args)
                         next unless a.server.group == name
                         
-                        klass
+                        a
                       }.compact
                      end
       end
@@ -38,11 +47,10 @@ class Uni_Mind
         invalid = []
         
         @apps ||= servers.map { |s| 
-          a = Uni_Mind.new(s.name, request.method_name, *request.args) 
-          if s.public_instance_methods.include?(request.method_name)
-            a
+          if s.respond_to?(request.method_name)
+            s
           else
-            invalid << a.request.path
+            invalid << s.request.path
             next
           end
         }
@@ -51,12 +59,12 @@ class Uni_Mind
           response.body @apps.map(&:fulfill)
         else
           if invalid.size == servers.size
-            raise Uni_Arch::Not_Found, request.path
+            raise Uni_Arch::Not_Found, "#{request.path} for all #{name} servers"
           else
-            raise Uni_Arch::Not_Found, invalid.join(', ')
+            raise Uni_Arch::Not_Found, "#{invalid.join(', ')} (#{name} group)"
           end
         end
-      end
+      end # === fulfill
 
     end # === module Arch
   end # === module Group

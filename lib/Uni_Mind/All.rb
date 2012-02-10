@@ -16,8 +16,9 @@ class Uni_Mind
     end
 
     def request!
-      if request.method_name == '*'
-        request.method_name! "all_#{request.args.shift}"
+      if [:*, '*'].include?(request.klass)
+        request.method_name! "all_#{request.method_name}"
+        request.klass! self.class
       end
       
       super

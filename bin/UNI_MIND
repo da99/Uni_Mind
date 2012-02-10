@@ -1,16 +1,13 @@
 #!/usr/bin/env ruby
 # -*- ruby -*-
 
+path  = File.join *ARGV
+puts "", 'Executing: ', path
+
 require 'Uni_Mind' 
-
-name = File.basename File.expand_path('.')
-args = [name] + ARGV
-arg  = File.join *args
-
-puts "", 'Executing: ', arg
-
-require "./#{name}"
-app = Uni_Mind.new( arg )
+require "./#{kname = File.basename File.expand_path('.')}"
+klass = Object.const_get(kname)
+app = klass.new( path )
 app.fulfill
 
 at_exit {

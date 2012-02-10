@@ -1,7 +1,7 @@
 require 'yaml'
 require "Uni_Arch"
 require "Uni_Mind/version"
-
+ 
 class Uni_Mind
 
   module Group

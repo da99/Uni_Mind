@@ -1,3 +1,3 @@
 class Bermuda
-  include Uni_Mind::Arch
+  include Uni_Mind::Group::Arch
 end
