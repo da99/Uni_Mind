@@ -24,6 +24,7 @@ Manage servers:
   s.add_development_dependency 'bacon'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'Bacon_Colored'
+  s.add_development_dependency 'Hi_App'
   
   s.add_runtime_dependency  'net-ssh'
   s.add_runtime_dependency  'net-scp'
