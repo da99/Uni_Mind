@@ -21,7 +21,46 @@ def thin_read name, file = nil
 end
 
 describe "require Uni_Mind" do
-  it 'requires each server to have a unique hostname'
+
+  after { BOX.reset }
+  
+  it 'requires each server to have a unique hostname' do
+    chdir {
+      
+      file         ="servers/No_Hostname/server.rb"
+      h            = eval(File.read(file))
+      h[:hostname] = `hostname`.strip
+      h[:ip] = "0.0.0.0"
+      
+      File.open(file, 'w') do |io|
+        io.write h.inspect
+      end
+      
+      lambda { BIN("Appster/print_info/hostname") }
+      .should.raise(Unified_IO::Local::Shell::Failed)
+      .message.should.match %r!Hostname: #{`hostname`.strip} in \w+, No_Hostname!
+      
+    }
+  end
+  
+  it 'requires each server to have a unique ip' do
+    chdir {
+      
+      file         ="servers/No_Hostname/server.rb"
+      h            = eval(File.read(file))
+      h[:hostname] = `hostname`.strip
+      
+      File.open(file, 'w') do |io|
+        io.write h.inspect
+      end
+      
+      lambda { BIN("Appster/print_info/hostname") }
+      .should.raise(Unified_IO::Local::Shell::Failed)
+      .message.should.match %r!IP: #{`hostname`.strip} in \w+, No_Hostname!
+      
+    }
+  end
+  
 end
 
 describe "App :thin_config" do
@@ -86,44 +125,155 @@ describe "UNI_MIND thin_config" do
   
 end # === describe UNI_MIND thin_config name port file_name
 
-describe "UNI_MIND cache gems" do
+describe "UNI_MIND sinatra create_app" do
   
-  it 'creates /bin in each dir in /apps'
-  it 'sets each sheband to ruby-local-exec'
-  it 'packages the gems for each app'
+  before {
+    chdir {
+      `rm -rf Hi_App`
+    }
+  }
   
-end # === describe UNI_MIND deploy_bundles
+  it 'does not overwrite existing files.' do
+    target = %!Original #{rand(10)}!
+    chdir {
+      `mkdir -p Hi_App`
+      File.open('Hi_App/app.rb', 'w') do |io|
+        io.write target
+      end
+      
+      BIN "sinatra/create_app Hi_App"
 
-describe "UNI_MIND create sinatra app" do
+      File.read("Hi_App/app.rb").should == target
+    }
+  end
+
+  it 'creates folder /name/public' do
+    BIN "sinatra/create_app Hi_App"
+    chdir {
+      File.directory?("Hi_App/public")
+      .should.be == true
+    }
+  end
+
+  it 'creates file   /name/config.ru' do
+    str = "run Hi_App"
+    BIN "sinatra/create_app Hi_App"
+    chdir {
+      File.read("Hi_App/config.ru")[str]
+      .should == str
+    }
+  end
+
+  it 'creates file   /name/name.rb' do
+    str = "class Hi_App"
+    BIN "sinatra/create_app Hi_App"
+    chdir {
+      File.read("Hi_App/Hi_App.rb")[str]
+      .should == str
+    }
+  end
+
+  it 'creates file   /name/Gemfile' do
+    r = %r!gem .sinatra.!
+    BIN "sinatra/create_app Hi_App"
+    chdir {
+      File.read("Hi_App/Gemfile")[r]
+      .should.match r
+    }
+  end
+
+  it 'git ignores tmp/*' do
+    BIN "sinatra/create_app Hi_App"
+    chdir {
+      File.read("Hi_App/.gitignore")[%r!^tmp/\*$!]
+      .should == "tmp/*"
+    }
+  end
   
-  it 'does not overwrite existing files.'
-  it 'creates folder /name'
-  it 'creates folder /name/config'
-  it 'creates folder /name/public'
-  it 'creates file   /name/config.ru'
-  it 'creates file   /name/name.rb'
-  it 'creates file   /name/Gemfile'
-  it 'creates file   /name/bin'
-  it 'changes the ruby executable in bin files to ruby-local-exec'
-  
-end # === describe UNI_MIND sin_app
+  it 'git ignores logs/*' do
+    BIN "sinatra/create_app Hi_App"
+    chdir {
+      File.read("Hi_App/.gitignore")[%r!^logs/\*$!]
+      .should == "logs/*"
+    }
+  end
+
+  it 'creates a git commit of: First commit' do
+    BIN "sinatra/create_app Hi_App"
+    chdir {
+      `cd Hi_App && git log -n 1 --oneline`.strip
+      .should.match %r!First commit!
+    }
+  end
+
+end # === describe UNI_MIND sinatra create_app
 
 describe "UNI_MIND deploy" do
   
-  it 'demands each app has no pending commits'
-  it 'demands file: apps.rb'
-  it 'creates user and group name:name for each app'
-  it "copies app files to /apps/name/date"
   
-  it 'sets permissions on /apps/name/date/* to name:name 740'
-  it "moves, not copies, app's public dir to /public/name/date"
+  it 'demands each app has no pending commits' do
+
+  end
   
-  it "sets permissions on /public/name/date/* to name:name 744"
+  it 'raises Missing_File if missing: apps.rb' do
+
+  end
   
-  it "creates link /apps/name/current => /apps/date/name"
-  it "creates link /public/name/current => /public/date/name"
+  it 'creates /bin in each app' do
+
+  end
   
-  it "does not create link if app is already up-to-date"
-  it "restarts nginx"
+  it 'sets each sheband to ruby-local-exec' do
+
+  end
+  
+  it 'creates /vendor for each app' do
+
+  end
+  
+  it 'creates user and group name:name for each app' do
+
+  end
+  
+  it "copies app files to /apps/name/source" do
+
+  end
+  
+  it 'sets permissions on /apps/name/source/* to name:name 740' do
+
+  end
+  
+  it 'copies, not moves, /public file to /app/name/public' do
+
+  end
+  
+  it "sets permissions on /app/name/public to name:name 744" do
+
+  end
+  
+  it "restarts nginx if apps are being deployed for the first time" do
+
+  end
+  
+  it "touches /app/name/tmp/restart.txt in each app" do
+    
+  end
   
 end # === describe UNI_MIND deploy
+
+describe "UNI_MIND revert NAME N" do
+  
+  it 'reverts app to previous data/time tag' do
+
+  end
+
+end # === UNI_MIND revert NAME N
+
+describe "UNI_MIND deploy NAME" do
+  
+  it "deploys reverted app to latest date/time tag" do
+    
+  end
+  
+end # === UNI_MIND deploy NAME
+

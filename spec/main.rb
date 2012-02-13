@@ -86,7 +86,7 @@ end
 def BIN cmd, pre = ''
   # results = `sudo -u $USER -i sh -c "cd #{FOLDER}/Mind && #{pre} bundle exec UNI_MIND #{cmd} 2>&1"`
   results = ''
-  Dir.chdir("#{FOLDER}/Mind") {
+  chdir {
     results = `#{pre} bundle exec UNI_MIND #{cmd} 2>&1`
   }
   if $?.exitstatus != 0

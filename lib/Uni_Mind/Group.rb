@@ -29,15 +29,34 @@ class Uni_Mind
 
       def servers
         @servers ||= begin
-                      Dir.glob("servers/*").map { |path|
-                        next unless File.directory?(path)
-                        
-                        klass = Object.const_get File.basename(path)
-                        a = klass.new(klass, request.method_name, *request.args)
-                        next unless a.server.group == name
-                        
-                        a
-                      }.compact
+                       ips       = {}
+                       hostnames = {}
+                      
+                       Dir.glob("servers/*").map { |path|
+                         next unless File.directory?(path)
+
+                         # Grab the klass of the server.
+                         klass = Object.const_get File.basename(path)
+                         a     = klass.new(klass, request.method_name, *request.args)
+                         next unless a.server.group == name
+
+                         # Duplicate ip?
+                         ip = a.server.ip
+                         if ips.has_key?(ip)
+                           raise Uni_Mind::Server::Duplicate, "IP: #{ip} in #{ips[ip]}, #{klass}"
+                         end
+                         ips[ip] = klass
+
+                         # Duplicate hostname?
+                         hn = a.server.hostname
+                         if hostnames.has_key?(hn)
+                           raise Uni_Mind::Server::Duplicate, "Hostname: #{hn} in #{hostnames[hn]}, #{klass}"
+                         end
+                         hostnames[hn] = klass
+
+                         # Add to list.
+                         a
+                       }.compact
                      end
       end
       

@@ -17,7 +17,7 @@ describe "Upload Templates" do
 
   it 'aborts when there is pending file to review' do
     lambda {
-      BIN_SKIP_IP_CHECK("All servers upload_templates")
+      BIN_SKIP_IP_CHECK("*/servers/upload_templates")
     }.should.raise( Unified_IO::Local::Shell::Failed )
     .message.should.match %r!Content needs to be reviewed/merged into :latest!
   end

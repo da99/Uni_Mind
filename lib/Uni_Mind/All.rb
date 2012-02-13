@@ -1,10 +1,6 @@
 
 class Uni_Mind
 
-  module Server
-    Duplicates = Class.new(RuntimeError)
-  end
-
   module Arch
 
     def initialize *raw

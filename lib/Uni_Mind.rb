@@ -28,6 +28,7 @@ end # === class Uni_Mind
 require 'Uni_Mind/Templates'
 require 'Uni_Mind/Group'
 require 'Uni_Mind/Server'
+require 'Uni_Mind/Sinatra'
 
 # Classes
 require 'Uni_Mind/Template_Dir'

@@ -1,6 +1,9 @@
 
 class Uni_Mind
   module Server
+    
+    Duplicate = Class.new(RuntimeError)
+
     module Arch
 
       def print_info prop
