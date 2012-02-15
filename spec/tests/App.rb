@@ -125,55 +125,68 @@ describe "UNI_MIND thin_config" do
   
 end # === describe UNI_MIND thin_config name port file_name
 
-describe "UNI_MIND deploy" do
+describe "UNI_MIND deploy (permissions)" do
+  
+  it 'creates user and group name:name for each app' do
+  end
+  
+  it "sets: umask u=rwx,g=rx,o=" do
+  end
+
+  it "sets /apps           to deploy:deploy, 755" do
+  end
+
+  it "sets /apps/name      to deploy:name, 750" do
+  end
+
+  it "sets /apps/name/code to deploy:name, 750" do
+  end
+
+  it "sets /apps/name/code/public to deploy:name, 750" do
+  end
+
+  it "sets /apps/name/git  to deploy:deploy, 700" do
+  end
+  
+  it "sets /apps/name/tmp  to deploy:deploy, 700" do
+  end
+  
+  it "sets /apps/name/logs to deploy:deploy, 700" do
+  end
+  
+end # === UNI_MIND deploy (permissions)
+
+describe "UNI_MIND deploy (file/dir creation)" do
   
   
   it 'demands each app has no pending commits' do
-
-  end
-  
-  it 'raises Missing_File if missing: apps.rb' do
-
+    file = "apps/bye_02/random.rb"
+    begin
+      chdir { FileUtil.touch file }
+      lamba { BIN "deploy" }
+      .should.raise(Unified_IO::Local::Shell::Failed)
+      .message.should.match %r!pending commits!
+    ensure
+      chdir { File.delete file }
+    end
   end
   
   it 'creates /bin in each app' do
-
   end
   
   it 'sets each sheband to ruby-local-exec' do
-
   end
   
   it 'creates /vendor for each app' do
-
   end
   
-  it 'creates user and group name:name for each app' do
-
-  end
-  
-  it "copies app files to /apps/name/source" do
-
-  end
-  
-  it 'sets permissions on /apps/name/source/* to name:name 740' do
-
-  end
-  
-  it 'copies, not moves, /public file to /app/name/public' do
-
-  end
-  
-  it "sets permissions on /app/name/public to name:name 744" do
-
+  it "copies app files to /apps/name/code" do
   end
   
   it "restarts nginx if apps are being deployed for the first time" do
-
   end
   
   it "touches /app/name/tmp/restart.txt in each app" do
-    
   end
   
 end # === describe UNI_MIND deploy
@@ -181,7 +194,6 @@ end # === describe UNI_MIND deploy
 describe "UNI_MIND revert NAME N" do
   
   it 'reverts app to previous data/time tag' do
-
   end
 
 end # === UNI_MIND revert NAME N

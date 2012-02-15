@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/local/rbenv/shims/ruby
 # -*- ruby -*-
 
 path  = File.join *ARGV
@@ -6,7 +6,7 @@ puts "", 'Executing: ', path
 
 require 'Uni_Mind' 
 require "./#{kname = File.basename File.expand_path('.')}"
-klass = Object.const_get(kname)
+klass = Object.const_get(kname)::UNI_MIND
 app = klass.new( path )
 app.fulfill
 

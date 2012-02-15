@@ -11,6 +11,10 @@ class Uni_Mind
       super(*raw)
     end
 
+    def apps
+      @apps ||= paths.map { |raw| ::Uni_Mind::App.new File.expand_path(raw) }
+    end
+    
     def request!
       if [:*, '*'].include?(request.klass)
         request.method_name! "all_#{request.method_name}"

@@ -35,4 +35,5 @@ Manage servers:
   s.add_runtime_dependency  'Unified_IO', '>= 1.0.0'
   s.add_runtime_dependency  'Checked', '> 1.0.0'
   s.add_runtime_dependency  'thin', '> 1.3.0'
+  s.add_runtime_dependency  'Git_Repo'
 end
