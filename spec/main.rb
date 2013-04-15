@@ -2,7 +2,7 @@
 require File.expand_path('spec/helper')
 require 'Uni_Mind'
 require 'Bacon_Colored'
-
+require 'pry'
 require 'Unified_IO'
 Unified_IO::Local::Shell.quiet
 
@@ -14,7 +14,7 @@ require 'open3'
 
 class Box
   include Unified_IO::Local::Shell::DSL
-  
+
   def chdir
     Dir.chdir("#{FOLDER}/Mind") { yield }
   end
@@ -40,7 +40,28 @@ class Box
       shell.run "rm #{file}" if file['origins/'] || file['pending/']
     }
   end
-end
+end # === class Box
+
+class Remote_Box
+  include Unified_IO::Remote::Shell::DSL
+  include Unified_IO::Local::Shell::DSL
+
+  def initialize
+    self.server = Unified_IO::Remote::Server.new('hostname'=>'Vagrant', 'user'=>'vagrant')
+  end
+
+  def reset
+    d = Unified::Remote::Dir.new("/apps")
+    if d.exists?
+      d.dirs.each { |path|
+        ignore_exits("userdel -r #{File.basename(path)}", 6=>"does not exist")
+      }
+    end
+    
+    ssh_run("sudo rm -rf /apps")
+  end
+
+end # === Remote_Box
 
 BOX = Box.new
 BOX.reset
